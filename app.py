@@ -186,70 +186,76 @@ def fetch_dual_investment_positions(api_key: str, secret_key: str):
     total_value = 0.0
     positions = []
     
-    print("[DEBUG] fetch_dual_investment_positions called", file=sys.stderr)
-    
-    # Use DCI product positions endpoint
-    endpoint = "/sapi/v1/dci/product/positions"
-    data = _binance_get(endpoint, {"size": 100}, api_key, secret_key)
-    print(f"[DEBUG] DCI response: {data}", file=sys.stderr)
-    
-    if not data or not isinstance(data, dict):
-        print("[DEBUG] No data returned from DCI endpoint", file=sys.stderr)
-        return round(total_value, 2), positions
-    
-    if "code" in data and data.get("code") != 0:
-        print(f"[DEBUG] DCI returned error: {data.get('msg')}", file=sys.stderr)
-        return round(total_value, 2), positions
-    
-    # Extract list from response - DCI returns {'list': [...]}
-    all_positions = data.get("list", [])
-    if not isinstance(all_positions, list):
-        print(f"[DEBUG] Unexpected list format: {type(all_positions)}", file=sys.stderr)
-        return round(total_value, 2), positions
-    
-    print(f"[DEBUG] DCI returned {len(all_positions)} total positions", file=sys.stderr)
-    
-    # Get current ETH price for value calculation
-    eth_price = get_eth_price()
-    
-    for item in all_positions:
-        status = item.get("purchaseStatus", "")
+    try:
+        print("[DEBUG] fetch_dual_investment_positions called", file=sys.stderr)
         
-        # Only include PURCHASE_SUCCESS (active) positions
-        if status != "PURCHASE_SUCCESS":
-            continue
+        # Use DCI product positions endpoint
+        endpoint = "/sapi/v1/dci/product/positions"
+        data = _binance_get(endpoint, {"size": 100}, api_key, secret_key)
+        print(f"[DEBUG] DCI response: {data}", file=sys.stderr)
         
-        # Extract position details per Dan's spec
-        product_id = str(item.get("id", "-"))
-        invest_coin = item.get("investCoin", "")  # ETH or USDT
-        subscription_amount = _safe_float(item.get("subscriptionAmount", 0))
-        strike_price = _safe_float(item.get("strikePrice", 0))
-        settle_ts = _safe_int(item.get("settleDate", 0))
-        apr_raw = _safe_float(item.get("apr", 0))
+        if not data or not isinstance(data, dict):
+            print("[DEBUG] No data returned from DCI endpoint", file=sys.stderr)
+            return round(total_value, 2), positions
         
-        # Convert APR to percentage (Binance returns as decimal e.g. 0.0048)
-        apr_pct = apr_raw * 100 if apr_raw < 1 else apr_raw
+        if "code" in data and data.get("code") != 0:
+            print(f"[DEBUG] DCI returned error: {data.get('msg')}", file=sys.stderr)
+            # Return empty instead of error - API key might be restricted
+            return round(total_value, 2), positions
         
-        # Calculate position value based on invest coin
-        if invest_coin == "ETH":
-            # ETH投入：金額 × 當前ETH價格
-            value = subscription_amount * eth_price
-        else:
-            # USDT投入：直接就是USDT價值
-            value = subscription_amount
+        # Extract list from response - DCI returns {'list': [...]}
+        all_positions = data.get("list", [])
+        if not isinstance(all_positions, list):
+            print(f"[DEBUG] Unexpected list format: {type(all_positions)}", file=sys.stderr)
+            return round(total_value, 2), positions
         
-        positions.append({
-            "product_id": product_id,
-            "invest_amount": round(subscription_amount, 4),
-            "invest_coin": invest_coin,
-            "strike_price": round(strike_price, 2),
-            "settle_date": _fmt_date(settle_ts),
-            "apr": round(apr_pct, 2),
-            "value_usd": round(value, 2),
-        })
-        total_value += value
+        print(f"[DEBUG] DCI returned {len(all_positions)} total positions", file=sys.stderr)
+        
+        # Get current ETH price for value calculation
+        eth_price = get_eth_price()
+        
+        for item in all_positions:
+            status = item.get("purchaseStatus", "")
+            
+            # Only include PURCHASE_SUCCESS (active) positions
+            if status != "PURCHASE_SUCCESS":
+                continue
+            
+            # Extract position details per Dan's spec
+            product_id = str(item.get("id", "-"))
+            invest_coin = item.get("investCoin", "")  # ETH or USDT
+            subscription_amount = _safe_float(item.get("subscriptionAmount", 0))
+            strike_price = _safe_float(item.get("strikePrice", 0))
+            settle_ts = _safe_int(item.get("settleDate", 0))
+            apr_raw = _safe_float(item.get("apr", 0))
+            
+            # Convert APR to percentage (Binance returns as decimal e.g. 0.0048)
+            apr_pct = apr_raw * 100 if apr_raw < 1 else apr_raw
+            
+            # Calculate position value based on invest coin
+            if invest_coin == "ETH":
+                # ETH投入：金額 × 當前ETH價格
+                value = subscription_amount * eth_price
+            else:
+                # USDT投入：直接就是USDT價值
+                value = subscription_amount
+            
+            positions.append({
+                "product_id": product_id,
+                "invest_amount": round(subscription_amount, 4),
+                "invest_coin": invest_coin,
+                "strike_price": round(strike_price, 2),
+                "settle_date": _fmt_date(settle_ts),
+                "apr": round(apr_pct, 2),
+                "value_usd": round(value, 2),
+            })
+            total_value += value
+        
+        print(f"[DEBUG] Active DCI positions: {len(positions)}, total value: {total_value}", file=sys.stderr)
+    except Exception as e:
+        print(f"[ERROR] fetch_dual_investment_positions exception: {e}", file=sys.stderr)
+        traceback.print_exc()
     
-    print(f"[DEBUG] Active DCI positions: {len(positions)}, total value: {total_value}", file=sys.stderr)
     return round(total_value, 2), positions
 
 
@@ -257,64 +263,77 @@ def fetch_spot_balances(api_key: str, secret_key: str):
     """Return (usdt, eth) spot balances."""
     usdt = eth = 0.0
     
-    print(f"[DEBUG] fetch_spot_balances called with api_key prefix: {api_key[:8]}..." if api_key else "[DEBUG] fetch_spot_balances called with empty api_key", file=sys.stderr)
+    try:
+        print(f"[DEBUG] fetch_spot_balances called with api_key prefix: {api_key[:8]}..." if api_key else "[DEBUG] fetch_spot_balances called with empty api_key", file=sys.stderr)
 
-    # Method 1: sapi/v3/asset/getUserAsset (POST)
-    print("[DEBUG] Trying Method 1: sapi/v3/asset/getUserAsset", file=sys.stderr)
-    data = _binance_post(
-        "/sapi/v3/asset/getUserAsset",
-        {"needBtcValuation": "false"},
-        api_key, secret_key,
-    )
-    print(f"[DEBUG] Method 1 response: {data}", file=sys.stderr)
-    
-    if data and isinstance(data, list):
-        print(f"[DEBUG] Method 1 returned list with {len(data)} assets", file=sys.stderr)
-        for b in data:
-            asset = b.get("asset", "")
-            total = _safe_float(b.get("free", 0)) + _safe_float(b.get("locked", 0))
-            print(f"[DEBUG] Asset: {asset}, Total: {total}", file=sys.stderr)
-            if asset == "USDT":
-                usdt = total
-            elif asset == "ETH":
-                eth = total
-        print(f"[DEBUG] Method 1 result - USDT: {usdt}, ETH: {eth}", file=sys.stderr)
-    elif data and isinstance(data, dict) and "code" in data:
-        print(f"[DEBUG] Method 1 returned error code: {data.get('code')}, msg: {data.get('msg')}", file=sys.stderr)
-    else:
-        print(f"[DEBUG] Method 1 failed or returned unexpected format", file=sys.stderr)
-
-    # Method 2 fallback: api/v3/account
-    if usdt == 0.0 and eth == 0.0:
-        print("[DEBUG] Method 1 returned zero balances, trying Method 2: api/v3/account", file=sys.stderr)
-        data2 = _binance_get("/api/v3/account", {}, api_key, secret_key)
-        print(f"[DEBUG] Method 2 response: {data2}", file=sys.stderr)
+        # Method 1: sapi/v3/asset/getUserAsset (POST)
+        print("[DEBUG] Trying Method 1: sapi/v3/asset/getUserAsset", file=sys.stderr)
+        data = _binance_post(
+            "/sapi/v3/asset/getUserAsset",
+            {"needBtcValuation": "false"},
+            api_key, secret_key,
+        )
+        print(f"[DEBUG] Method 1 response: {data}", file=sys.stderr)
         
-        if data2 and isinstance(data2, dict):
-            if "balances" in data2:
-                balances = data2.get("balances", [])
-                print(f"[DEBUG] Method 2 returned {len(balances)} balances", file=sys.stderr)
-                for b in balances:
-                    asset = b.get("asset", "")
-                    total = _safe_float(b.get("free", 0)) + _safe_float(b.get("locked", 0))
-                    if total > 0:  # Only log non-zero balances to reduce noise
-                        print(f"[DEBUG] Asset: {asset}, Total: {total}", file=sys.stderr)
-                    if asset == "USDT":
-                        usdt = total
-                    elif asset == "ETH":
-                        eth = total
-                print(f"[DEBUG] Method 2 result - USDT: {usdt}, ETH: {eth}", file=sys.stderr)
-            elif "code" in data2:
-                print(f"[DEBUG] Method 2 returned error code: {data2.get('code')}, msg: {data2.get('msg')}", file=sys.stderr)
-            else:
-                print(f"[DEBUG] Method 2 returned unexpected format: {type(data2)}", file=sys.stderr)
+        # Check for API error (e.g., invalid key, IP restrictions)
+        if data and isinstance(data, dict) and "code" in data:
+            error_code = data.get('code')
+            error_msg = data.get('msg', 'Unknown error')
+            print(f"[DEBUG] Method 1 returned error code: {error_code}, msg: {error_msg}", file=sys.stderr)
+            # Return 0,0 instead of raising error - let the UI show empty data
+            return 0.0, 0.0
+        
+        if data and isinstance(data, list):
+            print(f"[DEBUG] Method 1 returned list with {len(data)} assets", file=sys.stderr)
+            for b in data:
+                asset = b.get("asset", "")
+                total = _safe_float(b.get("free", 0)) + _safe_float(b.get("locked", 0))
+                print(f"[DEBUG] Asset: {asset}, Total: {total}", file=sys.stderr)
+                if asset == "USDT":
+                    usdt = total
+                elif asset == "ETH":
+                    eth = total
+            print(f"[DEBUG] Method 1 result - USDT: {usdt}, ETH: {eth}", file=sys.stderr)
         else:
-            print(f"[DEBUG] Method 2 failed - response type: {type(data2)}", file=sys.stderr)
-    else:
-        print(f"[DEBUG] Skipping Method 2, already got balances from Method 1", file=sys.stderr)
+            print(f"[DEBUG] Method 1 failed or returned unexpected format", file=sys.stderr)
+
+        # Method 2 fallback: api/v3/account
+        if usdt == 0.0 and eth == 0.0:
+            print("[DEBUG] Method 1 returned zero balances, trying Method 2: api/v3/account", file=sys.stderr)
+            data2 = _binance_get("/api/v3/account", {}, api_key, secret_key)
+            print(f"[DEBUG] Method 2 response: {data2}", file=sys.stderr)
+            
+            if data2 and isinstance(data2, dict):
+                if "code" in data2:
+                    error_code = data2.get('code')
+                    error_msg = data2.get('msg', 'Unknown error')
+                    print(f"[DEBUG] Method 2 returned error code: {error_code}, msg: {error_msg}", file=sys.stderr)
+                    # Return 0,0 instead of raising error
+                    return 0.0, 0.0
+                elif "balances" in data2:
+                    balances = data2.get("balances", [])
+                    print(f"[DEBUG] Method 2 returned {len(balances)} balances", file=sys.stderr)
+                    for b in balances:
+                        asset = b.get("asset", "")
+                        total = _safe_float(b.get("free", 0)) + _safe_float(b.get("locked", 0))
+                        if total > 0:
+                            print(f"[DEBUG] Asset: {asset}, Total: {total}", file=sys.stderr)
+                        if asset == "USDT":
+                            usdt = total
+                        elif asset == "ETH":
+                            eth = total
+                    print(f"[DEBUG] Method 2 result - USDT: {usdt}, ETH: {eth}", file=sys.stderr)
+                else:
+                    print(f"[DEBUG] Method 2 returned unexpected format: {type(data2)}", file=sys.stderr)
+            else:
+                print(f"[DEBUG] Method 2 failed - response type: {type(data2)}", file=sys.stderr)
+        else:
+            print(f"[DEBUG] Skipping Method 2, already got balances from Method 1", file=sys.stderr)
+    except Exception as e:
+        print(f"[ERROR] fetch_spot_balances exception: {e}", file=sys.stderr)
+        traceback.print_exc()
     
     print(f"[DEBUG] Final result - USDT: {usdt}, ETH: {eth}", file=sys.stderr)
-
     return usdt, eth
 
 
@@ -405,11 +424,24 @@ def sync_positions(api_key: str, secret_key: str, cutoff_days: int = 8):
     seen = set()
     cutoff_ms = int((time.time() - cutoff_days * 86400) * 1000)
 
-    data = _binance_get(
-        "/sapi/v1/accumulator/product/position/list",
-        {"pageSize": 100, "pageIndex": 1},
-        api_key, secret_key,
-    )
+    try:
+        data = _binance_get(
+            "/sapi/v1/accumulator/product/position/list",
+            {"pageSize": 100, "pageIndex": 1},
+            api_key, secret_key,
+        )
+        
+        # Check for API error
+        if data and isinstance(data, dict) and "code" in data:
+            error_code = data.get('code')
+            error_msg = data.get('msg', 'Unknown error')
+            print(f"[DEBUG] sync_positions returned error code: {error_code}, msg: {error_msg}", file=sys.stderr)
+            # Return empty instead of error
+            return active, settled
+        
+    except Exception as e:
+        print(f"[ERROR] sync_positions exception: {e}", file=sys.stderr)
+        return active, settled
 
     for p in _extract_list(data):
         raw_pid = p.get("positionId", p.get("productId", "-"))
