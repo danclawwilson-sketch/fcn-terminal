@@ -925,7 +925,9 @@
                     type: 'fcn'
                 });
                 
-                if (fcnData.available_dates) {
+                if (fcnData.error) {
+                    console.error('FCN history error:', fcnData.error);
+                } else if (fcnData.available_dates) {
                     state.fcnHistory.dates = fcnData.available_dates;
                     
                     const fcnSelect = document.getElementById('fcnHistoryDate');
@@ -948,7 +950,9 @@
                     type: 'dci'
                 });
                 
-                if (dciData.available_dates) {
+                if (dciData.error) {
+                    console.error('DCI history error:', dciData.error);
+                } else if (dciData.available_dates) {
                     state.dciHistory.dates = dciData.available_dates;
                     
                     const dciSelect = document.getElementById('dciHistoryDate');
@@ -985,10 +989,18 @@
                     settle_date: date
                 });
                 
+                if (data.error) {
+                    console.error('API error:', data.error);
+                    document.getElementById('fcnHistoryList').innerHTML = `<div class="empty-state">${data.error}</div>`;
+                    document.getElementById('fcnHistorySummary').innerHTML = '';
+                    return;
+                }
+                
                 renderFcnHistory(data);
             } catch (e) {
                 console.error('Load FCN history error:', e);
-                showToast('載入失敗', 'error');
+                document.getElementById('fcnHistoryList').innerHTML = '<div class="empty-state">載入失敗</div>';
+                document.getElementById('fcnHistorySummary').innerHTML = '';
             }
         }
         
@@ -1009,10 +1021,18 @@
                     settle_date: date
                 });
                 
+                if (data.error) {
+                    console.error('API error:', data.error);
+                    document.getElementById('dciHistoryList').innerHTML = `<div class="empty-state">${data.error}</div>`;
+                    document.getElementById('dciHistorySummary').innerHTML = '';
+                    return;
+                }
+                
                 renderDciHistory(data);
             } catch (e) {
                 console.error('Load DCI history error:', e);
-                showToast('載入失敗', 'error');
+                document.getElementById('dciHistoryList').innerHTML = '<div class="empty-state">載入失敗</div>';
+                document.getElementById('dciHistorySummary').innerHTML = '';
             }
         }
         
@@ -1020,6 +1040,13 @@
         function renderFcnHistory(data) {
             const list = document.getElementById('fcnHistoryList');
             const summary = document.getElementById('fcnHistorySummary');
+            
+            if (!data || !data.settled) {
+                list.innerHTML = '<div class="empty-state">載入失敗</div>';
+                summary.innerHTML = '';
+                return;
+            }
+            
             const settled = data.settled || [];
             
             if (settled.length === 0) {
@@ -1111,6 +1138,13 @@
         function renderDciHistory(data) {
             const list = document.getElementById('dciHistoryList');
             const summary = document.getElementById('dciHistorySummary');
+            
+            if (!data || !data.settled) {
+                list.innerHTML = '<div class="empty-state">載入失敗</div>';
+                summary.innerHTML = '';
+                return;
+            }
+            
             const settled = data.settled || [];
             
             if (settled.length === 0) {
