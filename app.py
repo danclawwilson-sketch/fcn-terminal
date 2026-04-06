@@ -873,10 +873,7 @@ def api_history():
                     except:
                         pass
                 
-                # Fallback: use strike price if fetch failed
-                if settle_price <= 0:
-                    settle_price = pos.get("strike", 0)
-                
+                # Only calculate if we have a valid settlement price
                 if settle_price > 0:
                     scenario, usdt_return, eth_return = calculate_settlement(
                         pos["amt"], pos["strike"], pos["ko"], pos["apr"], pos["dur"], settle_price
@@ -885,6 +882,13 @@ def api_history():
                     pos["usdt_return"] = usdt_return
                     pos["eth_return"] = eth_return
                     pos["actual_settle_price"] = settle_price
+                else:
+                    # Mark as unable to calculate
+                    pos["scenario"] = "--"
+                    pos["usdt_return"] = 0
+                    pos["eth_return"] = 0
+                    pos["actual_settle_price"] = 0
+                    pos["error"] = "無法獲取結算價格"
                 calculated.append(pos)
             
             return jsonify({
@@ -935,14 +939,18 @@ def api_history():
                     except:
                         pass
                 
-                # Fallback: use strike price if fetch failed
-                if settle_price <= 0:
-                    settle_price = pos.get("strike", 0)
-                
+                # Only calculate if we have a valid settlement price
                 if settle_price > 0:
                     result = calculate_dci_settlement(pos, settle_price)
                     pos.update(result)
                     pos["actual_settle_price"] = settle_price
+                else:
+                    # Mark as unable to calculate
+                    pos["scenario"] = "--"
+                    pos["usdt_return"] = 0
+                    pos["eth_return"] = 0
+                    pos["actual_settle_price"] = 0
+                    pos["error"] = "無法獲取結算價格"
                 calculated.append(pos)
             
             return jsonify({
