@@ -296,8 +296,12 @@ def fetch_dual_investment_history(api_key: str, secret_key: str, cutoff_days: in
             status = item.get("purchaseStatus", "")
             settle_ts = _safe_int(item.get("settleDate", 0))
             
-            # Only include settled positions within cutoff
-            if status not in ("SETTLED", "DELIVERED", "EXPIRED"):
+            # Include positions that are settled or have past settle date
+            now_ms = int(time.time() * 1000)
+            is_settled = status in ("SETTLED", "DELIVERED", "EXPIRED", "REDEMPTION_COMPLETED")
+            is_past = settle_ts > 0 and settle_ts < now_ms
+            
+            if not (is_settled or is_past):
                 continue
             if settle_ts < cutoff_ms:
                 continue
