@@ -485,108 +485,120 @@
             box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
         }
         
-        /* Date Range */
-        .date-range {
+        /* History Section - New Design */
+        .history-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 16px;
         }
         
-        .date-input-group {
-            text-align: center;
-        }
-        
-        .date-label {
-            display: block;
-            font-size: 0.7em;
-            color: var(--txt2);
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-        }
-        
-        .date-input {
-            width: 100%;
+        .history-column {
             background: var(--bg2);
             border: 1px solid var(--brd);
             border-radius: 8px;
-            padding: 10px;
+            padding: 12px;
+        }
+        
+        .history-column.fcn {
+            border-top: 2px solid var(--bull);
+        }
+        
+        .history-column.dci {
+            border-top: 2px solid var(--range);
+        }
+        
+        .history-col-header {
+            font-size: 0.8em;
+            font-weight: 600;
             color: var(--txt);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.9em;
+            margin-bottom: 12px;
             text-align: center;
         }
         
-        .date-input:focus {
+        .date-select {
+            width: 100%;
+            background: var(--sur);
+            border: 1px solid var(--brd);
+            border-radius: 6px;
+            padding: 8px;
+            color: var(--txt);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8em;
+            margin-bottom: 12px;
+        }
+        
+        .date-select:focus {
             outline: none;
             border-color: var(--acc);
         }
         
-        /* History Results */
-        .history-summary {
-            background: var(--bg2);
+        .history-list-compact {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .history-item-compact {
+            background: var(--sur);
             border: 1px solid var(--brd);
-            border-radius: 8px;
-            padding: 12px;
-            margin: 16px 0;
-            text-align: center;
-        }
-        
-        .history-summary .count {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 1.5em;
-            color: var(--acc);
-        }
-        
-        .history-summary .label {
-            font-size: 0.7em;
-            color: var(--txt2);
-            margin-top: 4px;
-        }
-        
-        .history-list {
-            margin-top: 12px;
-        }
-        
-        .history-item {
-            background: var(--bg2);
-            border: 1px solid var(--brd);
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 6px;
+            padding: 8px;
             margin-bottom: 8px;
+            font-size: 0.75em;
         }
         
-        .history-item .item-header {
+        .history-item-compact .item-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .history-item .phase {
-            font-family: 'Share Tech Mono', monospace;
-            color: var(--acc);
-            font-size: 0.9em;
-        }
-        
-        .history-item .date {
-            font-size: 0.75em;
-            color: var(--txt2);
-            background: var(--sur);
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-        
-        .history-item .amount {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 1.1em;
-            color: var(--txt);
             margin-bottom: 4px;
         }
         
-        .history-item .details {
-            font-size: 0.75em;
+        .history-item-compact .phase {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--acc);
+        }
+        
+        .history-item-compact .scenario {
+            font-size: 0.8em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .history-item-compact .scenario.ko, .history-item-compact .scenario.a {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--bull);
+        }
+        
+        .history-item-compact .scenario.s1, .history-item-compact .scenario.s2, .history-item-compact .scenario.b {
+            background: rgba(255, 184, 0, 0.15);
+            color: var(--range);
+        }
+        
+        .history-item-compact .amount {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--txt);
+        }
+        
+        .history-item-compact .return {
             color: var(--txt2);
+            font-size: 0.85em;
+        }
+        
+        .history-summary-compact {
+            background: var(--sur);
+            border: 1px solid var(--brd);
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 8px;
+            text-align: center;
+            font-size: 0.75em;
+        }
+        
+        .history-summary-compact .total {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--acc2);
+            font-size: 1.1em;
         }
         
         /* Toast */
@@ -751,28 +763,36 @@
             </div>
         </div>
         
-        <!-- History Query -->
+        <!-- History Section - Two Columns -->
         <div class="card hidden" id="historyCard">
             <div class="card-header">
-                <h3>歷史持倉查詢</h3>
+                <h3>歷史持倉 (最近30天)</h3>
             </div>
             <div class="card-body">
-                <div class="date-range">
-                    <div class="date-input-group">
-                        <label class="date-label">開始日期</label>
-                        <input type="date" class="date-input" id="historyStartDate">
+                <div class="history-grid">
+                    <!-- FCN History -->
+                    <div class="history-column fcn">
+                        <div class="history-col-header">折價買幣</div>
+                        <select class="date-select" id="fcnHistoryDate" onchange="loadFcnHistory()">
+                            <option value="">選擇結算日期</option>
+                        </select>
+                        <div class="history-list-compact" id="fcnHistoryList">
+                            <div class="empty-state">無歷史記錄</div>
+                        </div>
+                        <div class="history-summary-compact" id="fcnHistorySummary"></div>
                     </div>
-                    <div class="date-input-group">
-                        <label class="date-label">結束日期</label>
-                        <input type="date" class="date-input" id="historyEndDate">
+                    
+                    <!-- DCI History -->
+                    <div class="history-column dci">
+                        <div class="history-col-header">高價賣出</div>
+                        <select class="date-select" id="dciHistoryDate" onchange="loadDciHistory()">
+                            <option value="">選擇結算日期</option>
+                        </select>
+                        <div class="history-list-compact" id="dciHistoryList">
+                            <div class="empty-state">無歷史記錄</div>
+                        </div>
+                        <div class="history-summary-compact" id="dciHistorySummary"></div>
                     </div>
-                </div>
-                
-                <button class="btn-primary" onclick="queryHistory()" id="historyBtn">查詢歷史</button>
-                
-                <div id="historyResults" class="hidden">
-                    <div class="history-summary" id="historySummary"></div>
-                    <div class="history-list" id="historyList"></div>
                 </div>
             </div>
         </div>
@@ -793,7 +813,9 @@
             dualPositions: [],
             activePositions: [],
             settledPositions: [],
-            fcnTotalValue: 0
+            fcnTotalValue: 0,
+            fcnHistory: { dates: [], data: {} },
+            dciHistory: { dates: [], data: {} }
         };
         
         // API helper
@@ -853,6 +875,7 @@
                     updateStatus(true);
                     updateDashboard();
                     await loadPositions();
+                    await loadHistoryData();
                 } else {
                     showToast('Connection failed: ' + (data.error || 'Unknown error'), 'error');
                     btn.disabled = false;
@@ -877,31 +900,25 @@
             }
         }
         
-        // Update Dashboard with new layout
+        // Update Dashboard
         function updateDashboard() {
             const spotValue = state.spotUsdt + (state.spotEth * state.ethPrice);
             const fcnValue = state.fcnTotalValue;
             const dciValue = state.dualTotal;
             const total = spotValue + fcnValue + dciValue;
             
-            // Update ETH Price
             document.getElementById('liveEthPrice').textContent = '$' + state.ethPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            
-            // Update Total
             document.getElementById('liveTotal').textContent = '$' + total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             
-            // Update Spot Category
             document.getElementById('spotValue').textContent = '$' + spotValue.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
             document.getElementById('spotPercent').textContent = total > 0 ? ((spotValue / total) * 100).toFixed(1) + '%' : '0%';
             document.getElementById('spotUsdt').textContent = 'USDT: ' + state.spotUsdt.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
             document.getElementById('spotEth').textContent = 'ETH: ' + state.spotEth.toFixed(4);
             
-            // Update FCN Category
             document.getElementById('fcnValue').textContent = '$' + fcnValue.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
             document.getElementById('fcnPercent').textContent = total > 0 ? ((fcnValue / total) * 100).toFixed(1) + '%' : '0%';
             document.getElementById('fcnCount').textContent = state.activePositions.length + ' 筆';
             
-            // Update DCI Category
             document.getElementById('dciValue').textContent = '$' + dciValue.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
             document.getElementById('dciPercent').textContent = total > 0 ? ((dciValue / total) * 100).toFixed(1) + '%' : '0%';
             document.getElementById('dciCount').textContent = state.dualPositions.length + ' 筆';
@@ -939,12 +956,201 @@
             }
         }
         
+        // Load history data for both FCN and DCI
+        async function loadHistoryData() {
+            if (!state.connected) return;
+            
+            try {
+                // Load FCN history
+                const fcnData = await apiCall('/api/history', {
+                    api_key: state.apiKey,
+                    secret_key: state.secretKey,
+                    type: 'fcn'
+                });
+                
+                if (fcnData.available_dates) {
+                    state.fcnHistory.dates = fcnData.available_dates;
+                    state.fcnHistory.data = {};
+                    
+                    const fcnSelect = document.getElementById('fcnHistoryDate');
+                    fcnSelect.innerHTML = '<option value="">選擇結算日期</option>';
+                    fcnData.available_dates.forEach(date => {
+                        fcnSelect.innerHTML += `<option value="${date}">${date}</option>`;
+                    });
+                    
+                    // Auto-select latest date
+                    if (fcnData.available_dates.length > 0) {
+                        fcnSelect.value = fcnData.available_dates[0];
+                        loadFcnHistory();
+                    }
+                }
+                
+                // Load DCI history
+                const dciData = await apiCall('/api/history', {
+                    api_key: state.apiKey,
+                    secret_key: state.secretKey,
+                    type: 'dci'
+                });
+                
+                if (dciData.available_dates) {
+                    state.dciHistory.dates = dciData.available_dates;
+                    state.dciHistory.data = {};
+                    
+                    const dciSelect = document.getElementById('dciHistoryDate');
+                    dciSelect.innerHTML = '<option value="">選擇結算日期</option>';
+                    dciData.available_dates.forEach(date => {
+                        dciSelect.innerHTML += `<option value="${date}">${date}</option>`;
+                    });
+                    
+                    // Auto-select latest date
+                    if (dciData.available_dates.length > 0) {
+                        dciSelect.value = dciData.available_dates[0];
+                        loadDciHistory();
+                    }
+                }
+            } catch (e) {
+                console.error('Load history error:', e);
+            }
+        }
+        
+        // Load FCN history for selected date
+        async function loadFcnHistory() {
+            const date = document.getElementById('fcnHistoryDate').value;
+            if (!date) return;
+            
+            try {
+                const data = await apiCall('/api/history', {
+                    api_key: state.apiKey,
+                    secret_key: state.secretKey,
+                    type: 'fcn',
+                    settle_date: date
+                });
+                
+                renderFcnHistory(data);
+            } catch (e) {
+                console.error('Load FCN history error:', e);
+            }
+        }
+        
+        // Load DCI history for selected date
+        async function loadDciHistory() {
+            const date = document.getElementById('dciHistoryDate').value;
+            if (!date) return;
+            
+            try {
+                const data = await apiCall('/api/history', {
+                    api_key: state.apiKey,
+                    secret_key: state.secretKey,
+                    type: 'dci',
+                    settle_date: date
+                });
+                
+                renderDciHistory(data);
+            } catch (e) {
+                console.error('Load DCI history error:', e);
+            }
+        }
+        
+        // Render FCN history
+        function renderFcnHistory(data) {
+            const list = document.getElementById('fcnHistoryList');
+            const summary = document.getElementById('fcnHistorySummary');
+            const settled = data.settled || [];
+            
+            if (settled.length === 0) {
+                list.innerHTML = '<div class="empty-state">無歷史記錄</div>';
+                summary.innerHTML = '';
+                return;
+            }
+            
+            let totalUsdt = 0;
+            let totalEth = 0;
+            
+            list.innerHTML = settled.map(p => {
+                const scenario = p.scenario || '--';
+                const usdtReturn = p.usdt_return || 0;
+                const ethReturn = p.eth_return || 0;
+                
+                totalUsdt += usdtReturn;
+                totalEth += ethReturn;
+                
+                const scenarioClass = scenario.toLowerCase();
+                const scenarioIcon = scenario === 'KO' ? '✅' : scenario === 'S1' ? '⚠️' : scenario === 'S2' ? '⚡' : '';
+                
+                return `
+                    <div class="history-item-compact">
+                        <div class="item-row">
+                            <span class="phase">${p.phase}</span>
+                            <span class="scenario ${scenarioClass}">${scenarioIcon} ${scenario}</span>
+                        </div>
+                        <div class="item-row">
+                            <span class="amount">$${p.amt.toFixed(0)}</span>
+                            <span class="return">${usdtReturn > 0 ? '$' + usdtReturn.toFixed(0) : ethReturn > 0 ? ethReturn.toFixed(4) + ' ETH' : '--'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            summary.innerHTML = `
+                <div class="total">${totalUsdt > 0 ? '$' + totalUsdt.toFixed(0) : totalEth > 0 ? totalEth.toFixed(4) + ' ETH' : '--'}</div>
+                <div>該批次返還</div>
+            `;
+        }
+        
+        // Render DCI history
+        function renderDciHistory(data) {
+            const list = document.getElementById('dciHistoryList');
+            const summary = document.getElementById('dciHistorySummary');
+            const settled = data.settled || [];
+            
+            if (settled.length === 0) {
+                list.innerHTML = '<div class="empty-state">無歷史記錄</div>';
+                summary.innerHTML = '';
+                return;
+            }
+            
+            let totalUsdt = 0;
+            let totalEth = 0;
+            
+            list.innerHTML = settled.map(p => {
+                const scenario = p.scenario || '--';
+                const usdtReturn = p.usdt_return || 0;
+                const ethReturn = p.eth_return || 0;
+                const investCoin = p.invest_coin || 'USDT';
+                
+                totalUsdt += usdtReturn;
+                totalEth += ethReturn;
+                
+                const scenarioClass = scenario.toLowerCase();
+                const scenarioIcon = scenario === 'A' ? '✅' : '⚠️';
+                
+                return `
+                    <div class="history-item-compact">
+                        <div class="item-row">
+                            <span class="phase">${investCoin}</span>
+                            <span class="scenario ${scenarioClass}">${scenarioIcon} ${scenario}</span>
+                        </div>
+                        <div class="item-row">
+                            <span class="amount">${p.invest_amount.toFixed(4)} ${investCoin}</span>
+                            <span class="return">${usdtReturn > 0 ? '$' + usdtReturn.toFixed(0) : ethReturn > 0 ? ethReturn.toFixed(4) + ' ETH' : '--'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            summary.innerHTML = `
+                <div class="total">${totalUsdt > 0 ? '$' + totalUsdt.toFixed(0) : totalEth > 0 ? totalEth.toFixed(4) + ' ETH' : '--'}</div>
+                <div>該批次返還</div>
+            `;
+        }
+        
         // Sync data
         async function syncData() {
             const btn = document.getElementById('syncBtn');
             btn.disabled = true;
             btn.textContent = 'Syncing...';
             await loadPositions();
+            await loadHistoryData();
             btn.disabled = false;
             btn.textContent = '↓ SYNC';
         }
@@ -1069,79 +1275,6 @@
                     <div class="value">${summary.total_eth.toFixed(6)}</div>
                 </div>
             `;
-            
-            container.classList.remove('hidden');
-        }
-        
-        // Query history
-        async function queryHistory() {
-            const startDate = document.getElementById('historyStartDate').value;
-            const endDate = document.getElementById('historyEndDate').value;
-            const btn = document.getElementById('historyBtn');
-            
-            if (!startDate && !endDate) {
-                showToast('請選擇開始或結束日期', 'error');
-                return;
-            }
-            
-            btn.disabled = true;
-            btn.textContent = '查詢中...';
-            
-            try {
-                const data = await apiCall('/api/history', {
-                    api_key: state.apiKey,
-                    secret_key: state.secretKey,
-                    start_date: startDate || undefined,
-                    end_date: endDate || undefined
-                });
-                
-                renderHistoryResults(data);
-                showToast(`查詢完成，共 ${data.count} 筆`);
-            } catch (e) {
-                console.error('History query error:', e);
-                showToast('查詢失敗', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '查詢歷史';
-            }
-        }
-        
-        // Render history results
-        function renderHistoryResults(data) {
-            const container = document.getElementById('historyResults');
-            const summary = document.getElementById('historySummary');
-            const list = document.getElementById('historyList');
-            
-            const settled = data.settled || [];
-            
-            // Summary
-            summary.innerHTML = `
-                <div class="count">${settled.length}</div>
-                <div class="label">已結算倉位</div>
-                ${data.start_date || data.end_date ? `
-                <div style="font-size: 0.7em; color: var(--txt2); margin-top: 8px;">
-                    ${data.start_date || '開始'} ~ ${data.end_date || '現在'}
-                </div>
-                ` : ''}
-            `;
-            
-            // List
-            if (settled.length === 0) {
-                list.innerHTML = '<div class="empty-state">無歷史持倉記錄</div>';
-            } else {
-                list.innerHTML = settled.map(p => `
-                    <div class="history-item">
-                        <div class="item-header">
-                            <span class="phase">${p.phase}</span>
-                            <span class="date">${p.settle_date || '--'}</span>
-                        </div>
-                        <div class="amount">$${p.amt.toFixed(2)}</div>
-                        <div class="details">
-                            Strike: $${p.strike.toFixed(2)} | KO: $${p.ko.toFixed(2)} | APR: ${p.apr.toFixed(2)}% | ${p.dur}d
-                        </div>
-                    </div>
-                `).join('');
-            }
             
             container.classList.remove('hidden');
         }

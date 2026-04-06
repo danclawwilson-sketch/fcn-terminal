@@ -259,6 +259,129 @@ def fetch_dual_investment_positions(api_key: str, secret_key: str):
     return round(total_value, 2), positions
 
 
+def fetch_dual_investment_history(api_key: str, secret_key: str, cutoff_days: int = 30):
+    """
+    Fetch DCI historical settled positions.
+    Returns (total_value, positions_list)
+    """
+    total_value = 0.0
+    positions = []
+    cutoff_ms = int((time.time() - cutoff_days * 86400) * 1000)
+    
+    try:
+        print("[DEBUG] fetch_dual_investment_history called", file=sys.stderr)
+        
+        # Use DCI product positions endpoint with all statuses
+        endpoint = "/sapi/v1/dci/product/positions"
+        data = _binance_get(endpoint, {"size": 100}, api_key, secret_key)
+        print(f"[DEBUG] DCI history response: {data}", file=sys.stderr)
+        
+        if not data or not isinstance(data, dict):
+            print("[DEBUG] No data returned from DCI endpoint", file=sys.stderr)
+            return round(total_value, 2), positions
+        
+        if "code" in data and data.get("code") != 0:
+            print(f"[DEBUG] DCI returned error: {data.get('msg')}", file=sys.stderr)
+            return round(total_value, 2), positions
+        
+        # Extract list from response
+        all_positions = data.get("list", [])
+        if not isinstance(all_positions, list):
+            print(f"[DEBUG] Unexpected list format: {type(all_positions)}", file=sys.stderr)
+            return round(total_value, 2), positions
+        
+        print(f"[DEBUG] DCI returned {len(all_positions)} total positions", file=sys.stderr)
+        
+        for item in all_positions:
+            status = item.get("purchaseStatus", "")
+            settle_ts = _safe_int(item.get("settleDate", 0))
+            
+            # Only include settled positions within cutoff
+            if status not in ("SETTLED", "DELIVERED", "EXPIRED"):
+                continue
+            if settle_ts < cutoff_ms:
+                continue
+            
+            # Extract position details
+            product_id = str(item.get("id", "-"))
+            invest_coin = item.get("investCoin", "")  # ETH or USDT
+            subscription_amount = _safe_float(item.get("subscriptionAmount", 0))
+            strike_price = _safe_float(item.get("strikePrice", 0))
+            apr_raw = _safe_float(item.get("apr", 0))
+            settle_date = _fmt_date(settle_ts)
+            
+            # Calculate duration (days between subscription and settlement)
+            sub_ts = _safe_int(item.get("subscriptionTime", 0))
+            dur_days = max(1, (settle_ts - sub_ts) // 86400000) if settle_ts > sub_ts else 7
+            
+            # Convert APR to percentage
+            apr_pct = apr_raw * 100 if apr_raw < 1 else apr_raw
+            
+            positions.append({
+                "pid": product_id,
+                "invest_amount": round(subscription_amount, 4),
+                "invest_coin": invest_coin,
+                "strike": round(strike_price, 2),
+                "settle_date": settle_date,
+                "settle_ts": settle_ts,
+                "apr": round(apr_pct, 2),
+                "dur": dur_days,
+            })
+            total_value += subscription_amount if invest_coin == "USDT" else subscription_amount * strike_price
+        
+        print(f"[DEBUG] DCI history positions: {len(positions)}", file=sys.stderr)
+    except Exception as e:
+        print(f"[ERROR] fetch_dual_investment_history exception: {e}", file=sys.stderr)
+        traceback.print_exc()
+    
+    return round(total_value, 2), positions
+
+
+def calculate_dci_settlement(pos: dict, settle_price: float) -> dict:
+    """
+    Calculate DCI settlement result.
+    
+    DCI Rules:
+    - If settle_price >= strike: return original coin + interest
+    - If settle_price < strike: return converted coin + interest
+    """
+    invest_coin = pos.get("invest_coin", "")
+    invest_amount = pos.get("invest_amount", 0)
+    strike = pos.get("strike", 0)
+    apr = pos.get("apr", 0)
+    dur = pos.get("dur", 7)
+    
+    # Calculate interest
+    interest_multiplier = 1 + (apr / 100 * dur / 365)
+    
+    if settle_price >= strike:
+        # Not exercised - return original coin with interest
+        if invest_coin == "USDT":
+            scenario = "A"
+            usdt_return = invest_amount * interest_multiplier
+            eth_return = 0
+        else:  # ETH invested, but price is high, so return USDT equivalent
+            scenario = "A"
+            usdt_return = invest_amount * strike * interest_multiplier
+            eth_return = 0
+    else:
+        # Exercised - return converted coin with interest
+        if invest_coin == "USDT":
+            scenario = "B"
+            usdt_return = 0
+            eth_return = (invest_amount / strike) * interest_multiplier
+        else:  # ETH invested
+            scenario = "B"
+            usdt_return = 0
+            eth_return = invest_amount * interest_multiplier
+    
+    return {
+        "scenario": scenario,
+        "usdt_return": round(usdt_return, 2),
+        "eth_return": round(eth_return, 6),
+    }
+
+
 def fetch_spot_balances(api_key: str, secret_key: str):
     """Return (usdt, eth) spot balances."""
     usdt = eth = 0.0
@@ -692,52 +815,116 @@ def api_eth_price():
 # ---- POST /api/history ----
 @app.route("/api/history", methods=["POST"])
 def api_history():
-    """Fetch historical settled positions with date range."""
+    """Fetch historical settled positions with date range - supports FCN and DCI."""
     try:
         body = request.get_json(silent=True) or {}
         api_key, secret_key = _get_credentials(body)
         if not api_key or not secret_key:
             return jsonify({"error": "Missing credentials"}), 401
         
-        # Get date range parameters
-        start_date = body.get("start_date")  # YYYY-MM-DD format
-        end_date = body.get("end_date")      # YYYY-MM-DD format
+        # Get parameters
+        product_type = body.get("type", "fcn")  # 'fcn' or 'dci'
+        settle_date = body.get("settle_date")   # Specific date to query
         
-        # Calculate cutoff_days based on start_date
-        if start_date:
-            try:
-                start_dt = datetime.strptime(start_date, "%Y-%m-%d")
-                days_diff = (datetime.utcnow() - start_dt).days
-                cutoff_days = max(1, min(days_diff + 30, 180))  # Max 180 days
-            except ValueError:
-                cutoff_days = 90  # Default 90 days if invalid date
-        else:
-            cutoff_days = 90  # Default 90 days
+        # Default 30 days
+        cutoff_days = 30
         
-        # Get settled positions
-        _, settled = sync_positions(api_key, secret_key, cutoff_days)
-        
-        # Filter by date range if provided
-        if start_date or end_date:
-            filtered = []
+        if product_type == "fcn":
+            # Get FCN settled positions
+            _, settled = sync_positions(api_key, secret_key, cutoff_days)
+            
+            # Group by settle_date
+            date_groups = {}
             for pos in settled:
-                pos_date = pos.get("settle_date")
-                if not pos_date:
-                    continue
-                
-                if start_date and pos_date < start_date:
-                    continue
-                if end_date and pos_date > end_date:
-                    continue
-                filtered.append(pos)
-            settled = filtered
+                d = pos.get("settle_date")
+                if d:
+                    if d not in date_groups:
+                        date_groups[d] = []
+                    date_groups[d].append(pos)
+            
+            # Get all available dates (sorted)
+            available_dates = sorted(date_groups.keys(), reverse=True)
+            
+            # If specific date requested, filter
+            if settle_date and settle_date in date_groups:
+                result_positions = date_groups[settle_date]
+            elif available_dates:
+                # Default to latest date
+                settle_date = available_dates[0]
+                result_positions = date_groups[settle_date]
+            else:
+                result_positions = []
+                settle_date = None
+            
+            # Auto-calculate settlement results
+            calculated = []
+            for pos in result_positions:
+                # Use actual settle price from history if available, otherwise need to fetch
+                settle_price = pos.get("actual_settle_price", 0)
+                if settle_price > 0:
+                    scenario, usdt_return, eth_return = calculate_settlement(
+                        pos["amt"], pos["strike"], pos["ko"], pos["apr"], pos["dur"], settle_price
+                    )
+                    pos["scenario"] = scenario
+                    pos["usdt_return"] = usdt_return
+                    pos["eth_return"] = eth_return
+                calculated.append(pos)
+            
+            return jsonify({
+                "type": "fcn",
+                "settled": calculated,
+                "count": len(calculated),
+                "settle_date": settle_date,
+                "available_dates": available_dates,
+            })
+            
+        elif product_type == "dci":
+            # Get DCI settled positions
+            _, dci_positions = fetch_dual_investment_history(api_key, secret_key, cutoff_days)
+            
+            # Group by settle_date
+            date_groups = {}
+            for pos in dci_positions:
+                d = pos.get("settle_date")
+                if d:
+                    if d not in date_groups:
+                        date_groups[d] = []
+                    date_groups[d].append(pos)
+            
+            # Get all available dates (sorted)
+            available_dates = sorted(date_groups.keys(), reverse=True)
+            
+            # If specific date requested, filter
+            if settle_date and settle_date in date_groups:
+                result_positions = date_groups[settle_date]
+            elif available_dates:
+                # Default to latest date
+                settle_date = available_dates[0]
+                result_positions = date_groups[settle_date]
+            else:
+                result_positions = []
+                settle_date = None
+            
+            # Auto-calculate DCI settlement results
+            calculated = []
+            for pos in result_positions:
+                settle_price = pos.get("actual_settle_price", 0)
+                if settle_price > 0:
+                    result = calculate_dci_settlement(pos, settle_price)
+                    pos.update(result)
+                calculated.append(pos)
+            
+            return jsonify({
+                "type": "dci",
+                "settled": calculated,
+                "count": len(calculated),
+                "settle_date": settle_date,
+                "available_dates": available_dates,
+            })
         
-        return jsonify({
-            "settled": settled,
-            "count": len(settled),
-            "start_date": start_date,
-            "end_date": end_date,
-        })
+        else:
+            return jsonify({"error": "Invalid type. Use 'fcn' or 'dci'"}), 400
+            
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": f"Internal error: {str(e)}"}), 500
