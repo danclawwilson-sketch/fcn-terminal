@@ -4,222 +4,521 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FCN Terminal v3.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
-            background: #0a0a0a;
-            color: #00ff88;
-            min-height: 100vh;
-            padding: 20px;
+        :root {
+            --bg: #04080f;
+            --bg2: #070d18;
+            --sur: #0a1220;
+            --sur2: #0d1a2e;
+            --brd: #0e2040;
+            --brd2: #1a3560;
+            --acc: #00d9ff;
+            --acc2: #00ff88;
+            --bull: #00ff88;
+            --bear: #ff2d55;
+            --range: #ffb800;
+            --txt: #e0f0ff;
+            --txt2: #8a9bb0;
+            --shadow: 0 0 20px rgba(0, 217, 255, 0.15);
+            --glow: 0 0 30px rgba(0, 217, 255, 0.3);
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            min-height: 100vh;
+            padding: 16px;
+            line-height: 1.6;
+        }
+        
+        .container { max-width: 480px; margin: 0 auto; }
         
         /* Header */
         .header {
             text-align: center;
-            padding: 20px 0;
-            border-bottom: 2px solid #00ff88;
-            margin-bottom: 20px;
-        }
-        .header h1 { font-size: 2em; letter-spacing: 4px; }
-        .header .subtitle { color: #666; font-size: 0.9em; margin-top: 5px; }
-        
-        /* Connection Panel */
-        .conn-panel {
-            background: #111;
-            border: 1px solid #333;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        .conn-panel h3 { margin-bottom: 15px; color: #00ff88; }
-        .input-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .input-group input {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: #00ff88;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 12px;
-        }
-        .btn {
-            background: #00ff88;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: bold;
-            font-family: monospace;
-        }
-        .btn:hover { background: #00cc6a; }
-        .btn:disabled { background: #333; color: #666; cursor: not-allowed; }
-        .status { margin-top: 10px; font-size: 12px; color: #666; }
-        
-        /* Live Bar */
-        .live-bar {
-            background: #111;
-            border: 1px solid #00ff88;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .live-item {
-            text-align: center;
-            padding: 10px;
-            background: #0a0a0a;
-            border: 1px solid #333;
-        }
-        .live-item .label {
-            font-size: 11px;
-            color: #666;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-        .live-item .value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #00ff88;
-        }
-        .live-item .value.warning { color: #ffaa00; }
-        .live-item .value.error { color: #ff4444; }
-        .sync-row {
-            grid-column: 1 / -1;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #333;
+            padding: 24px 0 16px;
         }
         
-        /* Panels */
-        .panel {
-            background: #111;
-            border: 1px solid #333;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            overflow: hidden;
+        .header-icon {
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--acc);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 10px var(--acc);
         }
-        .panel-header {
-            background: #1a1a1a;
-            padding: 12px 15px;
-            border-bottom: 1px solid #333;
-            display: flex;
-            justify-content: space-between;
+        
+        .header h1 {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.3em;
+            letter-spacing: 4px;
+            color: var(--acc);
+            font-weight: 400;
+            display: inline-flex;
             align-items: center;
         }
-        .panel-header h3 {
-            font-size: 14px;
+        
+        .header .subtitle {
+            color: var(--txt2);
+            font-size: 0.75em;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--sur);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .card-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--brd);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card-header h3 {
+            font-size: 0.75em;
+            color: var(--txt2);
             text-transform: uppercase;
             letter-spacing: 2px;
+            font-weight: 600;
         }
-        .panel-header .badge {
-            background: #00ff88;
-            color: #000;
-            padding: 2px 8px;
-            font-size: 11px;
-            border-radius: 2px;
+        
+        .card-body {
+            padding: 16px;
+        }
+        
+        /* LIVE Indicator */
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7em;
+            color: var(--acc2);
+            letter-spacing: 2px;
+        }
+        
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--acc2);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--acc2);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        
+        /* Status Button */
+        .status-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: 600;
+            border: 1px solid;
+        }
+        
+        .status-btn.offline {
+            background: rgba(255, 45, 85, 0.1);
+            color: var(--bear);
+            border-color: var(--bear);
+        }
+        
+        .status-btn.online {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--bull);
+            border-color: var(--bull);
+        }
+        
+        .status-btn::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-btn.offline::before {
+            background: var(--bear);
+            box-shadow: 0 0 6px var(--bear);
+        }
+        
+        .status-btn.online::before {
+            background: var(--bull);
+            box-shadow: 0 0 6px var(--bull);
+        }
+        
+        /* Price Display */
+        .price-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        
+        .price-label {
+            font-size: 0.7em;
+            color: var(--txt2);
+            letter-spacing: 1px;
+        }
+        
+        .price-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.8em;
+            color: var(--acc2);
+            font-weight: 600;
+        }
+        
+        /* Balance Grid */
+        .balance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            text-align: center;
+            margin: 16px 0;
+        }
+        
+        .balance-item .label {
+            font-size: 0.65em;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .balance-item .value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1em;
+            color: var(--txt);
+            margin-top: 2px;
+        }
+        
+        /* Total Value */
+        .total-value {
+            text-align: center;
+            padding: 16px 0;
+            border-top: 1px solid var(--brd);
+            margin-top: 8px;
+        }
+        
+        .total-label {
+            font-size: 0.8em;
+            color: var(--txt2);
+        }
+        
+        .total-amount {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5em;
+            color: var(--acc2);
+            margin-top: 4px;
+        }
+        
+        /* Sync Button */
+        .sync-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--brd2);
+            color: var(--txt);
+            border-radius: 8px;
+            font-size: 0.8em;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 12px;
+        }
+        
+        .sync-btn:hover {
+            background: var(--brd);
+            border-color: var(--acc);
+            color: var(--acc);
+        }
+        
+        .sync-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Section Title */
+        .section-title {
+            font-size: 0.75em;
+            color: var(--acc);
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title::before {
+            content: '//';
+            color: var(--txt2);
+        }
+        
+        /* Form Fields */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.7em;
+            color: var(--txt2);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: var(--bg2);
+            border: 1px solid var(--brd);
+            border-radius: 8px;
+            padding: 16px;
+            color: var(--acc2);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.3em;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--acc);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
+        }
+        
+        .form-input::placeholder {
+            color: var(--brd2);
+        }
+        
+        /* Primary Button */
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--acc), var(--acc2));
+            border: none;
+            border-radius: 8px;
+            color: var(--bg);
+            font-size: 0.85em;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: var(--glow);
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary:disabled {
+            background: var(--brd);
+            color: var(--txt2);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Connection Panel */
+        .conn-panel .card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .input-row input {
+            flex: 1;
+            background: var(--bg2);
+            border: 1px solid var(--brd);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--txt);
+            font-size: 0.8em;
+        }
+        
+        .input-row input::placeholder {
+            color: var(--txt2);
+        }
+        
+        .input-row input:focus {
+            outline: none;
+            border-color: var(--acc);
+        }
+        
+        .conn-status {
+            font-size: 0.75em;
+            color: var(--txt2);
+            text-align: center;
         }
         
         /* Tables */
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
+            font-size: 0.75em;
         }
-        th, td {
-            padding: 10px 12px;
-            text-align: left;
-            border-bottom: 1px solid #222;
-        }
+        
         th {
-            background: #0a0a0a;
-            color: #00ff88;
-            font-weight: normal;
+            color: var(--txt2);
+            font-weight: 600;
             text-transform: uppercase;
-            font-size: 10px;
+            font-size: 0.8em;
             letter-spacing: 1px;
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--brd);
+            text-align: left;
         }
-        tr:hover { background: #1a1a1a; }
+        
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--brd);
+            color: var(--txt);
+        }
+        
+        tr:hover {
+            background: var(--sur2);
+        }
+        
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         
         /* Scenario badges */
-        .scenario-ko { color: #00ff88; }
-        .scenario-s1 { color: #ff4444; }
-        .scenario-s2 { color: #ffaa00; }
+        .scenario-ko { color: var(--bull); }
+        .scenario-s1 { color: var(--bear); }
+        .scenario-s2 { color: var(--range); }
         
-        /* Calculation Panel */
-        .calc-panel {
-            background: #111;
-            border: 1px solid #333;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        .calc-inputs {
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            gap: 10px;
-            align-items: end;
-        }
-        .calc-inputs input {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: #00ff88;
-            padding: 10px;
-            font-family: monospace;
+        /* Positions List */
+        .position-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--brd);
         }
         
-        /* Summary Box */
-        .summary-box {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            padding: 15px;
-            margin-top: 15px;
-        }
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        .summary-item {
-            text-align: center;
-        }
-        .summary-item .label {
-            font-size: 10px;
-            color: #666;
-            text-transform: uppercase;
-        }
-        .summary-item .value {
-            font-size: 16px;
-            color: #00ff88;
-            margin-top: 5px;
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
         }
         
-        /* Empty state */
+        .position-phase {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--acc);
+            font-size: 0.9em;
+        }
+        
+        .position-amt {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--txt);
+        }
+        
+        .position-details {
+            font-size: 0.75em;
+            color: var(--txt2);
+        }
+        
+        /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 40px;
-            color: #666;
+            padding: 32px;
+            color: var(--txt2);
+            font-size: 0.85em;
         }
         
         /* Hidden */
         .hidden { display: none !important; }
         
-        /* Checkbox */
-        input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: #00ff88;
+        /* Badge */
+        .badge {
+            background: var(--acc);
+            color: var(--bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 700;
+        }
+        
+        /* Results */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .result-item {
+            background: var(--bg2);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .result-item .label {
+            font-size: 0.65em;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .result-item .value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1em;
+            color: var(--acc2);
+            margin-top: 4px;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--sur);
+            border: 1px solid var(--brd);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .toast.success {
+            border-color: var(--bull);
+            color: var(--bull);
+        }
+        
+        .toast.error {
+            border-color: var(--bear);
+            color: var(--bear);
         }
     </style>
 </head>
@@ -227,135 +526,115 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>FCN TERMINAL v3.0</h1>
-            <div class="subtitle">Binance Structured Product Portfolio Manager</div>
+            <h1><span class="header-icon"></span>FCN TERMINAL V3.0</h1>
+            <div class="subtitle">幣安結構性產品投資組合管理</div>
         </div>
         
         <!-- Connection Panel -->
-        <div class="conn-panel">
-            <h3>🔌 API Connection</h3>
-            <div class="input-group">
-                <input type="text" id="apiKey" placeholder="API Key" autocomplete="off">
-                <input type="password" id="secretKey" placeholder="Secret Key" autocomplete="off">
-                <button class="btn" id="connectBtn" onclick="connect()">Connect</button>
-            </div>
-            <div class="status" id="connStatus">Not connected</div>
-        </div>
-        
-        <!-- Live Bar -->
-        <div class="live-bar hidden" id="liveBar">
-            <div class="live-item">
-                <div class="label">ETH/USDT</div>
-                <div class="value" id="liveEthPrice">--</div>
-            </div>
-            <div class="live-item">
-                <div class="label">USDT Balance</div>
-                <div class="value" id="liveUsdt">--</div>
-            </div>
-            <div class="live-item">
-                <div class="label">ETH Balance</div>
-                <div class="value" id="liveEth">--</div>
-            </div>
-            <div class="live-item">
-                <div class="label">FCN Position Value</div>
-                <div class="value" id="liveFcnValue">--</div>
-            </div>
-            <div class="live-item">
-                <div class="label">Dual Investment</div>
-                <div class="value" id="liveDualValue">--</div>
-            </div>
-            <div class="live-item">
-                <div class="label">Total Portfolio</div>
-                <div class="value" id="liveTotal">--</div>
-            </div>
-            <div class="sync-row">
-                <button class="btn" onclick="syncData()">↻ SYNC</button>
-                <span id="lastSync" style="color: #666; font-size: 11px;">Never</span>
+        <div class="card conn-panel" id="connPanel">
+            <div class="card-body">
+                <div class="input-row">
+                    <input type="text" id="apiKey" placeholder="API Key" autocomplete="off">
+                </div>
+                <div class="input-row">
+                    <input type="password" id="secretKey" placeholder="Secret Key" autocomplete="off">
+                </div>
+                <button class="btn-primary" id="connectBtn" onclick="connect()">Connect</button>
+                <div class="conn-status" id="connStatus">Not connected</div>
             </div>
         </div>
         
-        <!-- Dual Investment Positions -->
-        <div class="panel hidden" id="dualPanel">
-            <div class="panel-header">
-                <h3>Dual Investment 持倉</h3>
-                <span class="badge" id="dualCount">0</span>
+        <!-- Live Dashboard -->
+        <div class="card hidden" id="dashboardCard">
+            <div class="card-header">
+                <div class="live-indicator">
+                    <span class="live-dot"></span>
+                    LIVE
+                </div>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>產品ID</th>
-                        <th class="text-right">投入</th>
-                        <th class="text-center">幣種</th>
-                        <th class="text-right">行權價</th>
-                        <th class="text-center">結算日</th>
-                        <th class="text-right">APR</th>
-                        <th class="text-right">當前價值 (USD)</th>
-                    </tr>
-                </thead>
-                <tbody id="dualTableBody">
-                    <tr><td colspan="7" class="empty-state">No data</td></tr>
-                </tbody>
-            </table>
+            <div class="card-body">
+                <div class="price-display">
+                    <span class="status-btn offline" id="connStatusBtn">斷線</span>
+                    <span class="price-label">ETH/USDT</span>
+                    <span class="price-value" id="liveEthPrice">--</span>
+                </div>
+                
+                <div class="balance-grid">
+                    <div class="balance-item">
+                        <div class="label">USDT 餘額</div>
+                        <div class="value" id="liveUsdt">--</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="label">ETH 餘額</div>
+                        <div class="value" id="liveEth">--</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="label">持倉價值</div>
+                        <div class="value" id="liveFcnValue">--</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="label">雙幣投資</div>
+                        <div class="value" id="liveDualValue">--</div>
+                    </div>
+                </div>
+                
+                <div class="total-value">
+                    <div class="total-label">總投資組合價值</div>
+                    <div class="total-amount" id="liveTotal">-- USDT</div>
+                </div>
+                
+                <button class="sync-btn" onclick="syncData()" id="syncBtn">↻ SYNC</button>
+            </div>
         </div>
         
-        <!-- FCN Active Positions -->
-        <div class="panel hidden" id="activePanel">
-            <div class="panel-header">
-                <h3>FCN Active Positions</h3>
-                <span class="badge" id="activeCount">0</span>
+        <!-- Positions -->
+        <div class="card hidden" id="positionsCard">
+            <div class="card-header">
+                <h3>FCN 持倉 <span class="badge" id="activeCount">0</span></h3>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Phase</th>
-                        <th class="text-right">Amount (USDT)</th>
-                        <th class="text-right">Strike</th>
-                        <th class="text-right">KO</th>
-                        <th class="text-right">APR</th>
-                        <th class="text-center">Duration</th>
-                        <th class="text-center">Settle Date</th>
-                    </tr>
-                </thead>
-                <tbody id="activeTableBody">
-                    <tr><td colspan="7" class="empty-state">No active positions</td></tr>
-                </tbody>
-            </table>
+            <div class="card-body" id="positionsList">
+                <div class="empty-state">No active positions</div>
+            </div>
         </div>
         
-        <!-- FCN Settled Positions -->
-        <div class="panel hidden" id="settledPanel">
-            <div class="panel-header">
-                <h3>FCN Settled Positions</h3>
-                <span class="badge" id="settledCount">0</span>
+        <!-- Dual Investment -->
+        <div class="card hidden" id="dualCard">
+            <div class="card-header">
+                <h3>雙幣投資 <span class="badge" id="dualCount">0</span></h3>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Phase</th>
-                        <th class="text-right">Amount</th>
-                        <th class="text-right">Strike</th>
-                        <th class="text-right">KO</th>
-                        <th class="text-right">APR</th>
-                        <th class="text-center">Settle Date</th>
-                    </tr>
-                </thead>
-                <tbody id="settledTableBody">
-                    <tr><td colspan="6" class="empty-state">No settled positions</td></tr>
-                </tbody>
-            </table>
+            <div class="card-body" id="dualList">
+                <div class="empty-state">No active positions</div>
+            </div>
         </div>
         
-        <!-- Settlement Calculator -->
-        <div class="calc-panel hidden" id="calcPanel">
-            <h3 style="margin-bottom: 15px;">🧮 Settlement Calculator</h3>
-            <div class="calc-inputs">
-                <input type="number" id="settlePrice" placeholder="Settlement Price (e.g., 2157.87)" step="0.01">
-                <button class="btn" onclick="calculateSettlement()">Calculate</button>
-                <button class="btn" onclick="fetchSettlementPrice()" style="background: #333; color: #00ff88;">Get Settlement Price</button>
+        <!-- Settlement Control -->
+        <div class="card hidden" id="settlementCard">
+            <div class="card-body">
+                <h3 class="section-title">結算控制</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">結算日期</label>
+                    <input type="text" class="form-input" id="settleDate" readonly placeholder="--">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">結算價格</label>
+                    <input type="number" class="form-input" id="settlePrice" placeholder="0.00" step="0.01">
+                    <div style="text-align: center; font-size: 0.7em; color: var(--txt2); margin-top: 4px;">USDT</div>
+                </div>
+                
+                <button class="btn-primary" onclick="calculateSettlement()">計算收益</button>
+                
+                <div id="calcResults" class="hidden">
+                    <div class="results-grid" id="resultsGrid">
+                        <!-- Results will be inserted here -->
+                    </div>
+                </div>
             </div>
-            <div id="calcResults"></div>
         </div>
     </div>
+    
+    <div class="toast" id="toast"></div>
     
     <script>
         // State
@@ -383,17 +662,27 @@
             return await res.json();
         }
         
+        // Show toast
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
         // Connect
         async function connect() {
             const apiKey = document.getElementById('apiKey').value.trim();
             const secretKey = document.getElementById('secretKey').value.trim();
             
             if (!apiKey || !secretKey) {
-                updateStatus('Please enter both API Key and Secret Key', 'error');
+                showToast('請輸入 API Key 和 Secret Key', 'error');
                 return;
             }
             
-            updateStatus('Connecting...', 'info');
+            const btn = document.getElementById('connectBtn');
+            btn.disabled = true;
+            btn.textContent = 'Connecting...';
             
             try {
                 const data = await apiCall('/api/connect', { api_key: apiKey, secret_key: secretKey });
@@ -407,17 +696,39 @@
                     state.spotEth = data.spot_eth || 0;
                     state.dualTotal = data.dual_total || 0;
                     
-                    updateStatus('Connected successfully', 'success');
-                    showPanels();
-                    updateLiveBar();
+                    showToast('Connected successfully');
                     
-                    // Load positions
+                    // Update UI
+                    document.getElementById('connPanel').classList.add('hidden');
+                    document.getElementById('dashboardCard').classList.remove('hidden');
+                    document.getElementById('positionsCard').classList.remove('hidden');
+                    document.getElementById('dualCard').classList.remove('hidden');
+                    document.getElementById('settlementCard').classList.remove('hidden');
+                    
+                    updateStatus(true);
+                    updateLiveBar();
                     await loadPositions();
                 } else {
-                    updateStatus('Connection failed: ' + (data.error || 'Unknown error'), 'error');
+                    showToast('Connection failed: ' + (data.error || 'Unknown error'), 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Connect';
                 }
             } catch (e) {
-                updateStatus('Error: ' + e.message, 'error');
+                showToast('Error: ' + e.message, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Connect';
+            }
+        }
+        
+        // Update connection status
+        function updateStatus(connected) {
+            const btn = document.getElementById('connStatusBtn');
+            if (connected) {
+                btn.className = 'status-btn online';
+                btn.textContent = '已連接';
+            } else {
+                btn.className = 'status-btn offline';
+                btn.textContent = '斷線';
             }
         }
         
@@ -439,129 +750,93 @@
                 state.dualPositions = (data.dual_investment && data.dual_investment.positions) || [];
                 state.ethPrice = data.eth_price || 0;
                 
-                // Calculate FCN position value
                 state.fcnTotalValue = state.activePositions.reduce((sum, p) => sum + (p.amt || 0), 0);
                 
+                renderPositions();
                 renderDualPositions();
-                renderActivePositions();
-                renderSettledPositions();
                 updateLiveBar();
+                updateSettlementDate();
                 
-                document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
+                showToast('數據已同步');
             } catch (e) {
                 console.error('Load positions error:', e);
+                showToast('同步失敗', 'error');
             }
         }
         
         // Sync data
         async function syncData() {
-            if (!state.connected) return;
-            
-            document.getElementById('lastSync').textContent = 'Syncing...';
+            const btn = document.getElementById('syncBtn');
+            btn.disabled = true;
+            btn.textContent = 'Syncing...';
             await loadPositions();
+            btn.disabled = false;
+            btn.textContent = '↻ SYNC';
         }
         
-        // Render Dual Investment positions
+        // Update settlement date
+        function updateSettlementDate() {
+            if (state.activePositions.length === 0) return;
+            const earliest = state.activePositions.reduce((min, p) => p.settle_ts < min.settle_ts ? p : min, state.activePositions[0]);
+            document.getElementById('settleDate').value = earliest.settle_date || '--';
+        }
+        
+        // Render positions
+        function renderPositions() {
+            const container = document.getElementById('positionsList');
+            document.getElementById('activeCount').textContent = state.activePositions.length;
+            
+            if (state.activePositions.length === 0) {
+                container.innerHTML = '<div class="empty-state">No active positions</div>';
+                return;
+            }
+            
+            container.innerHTML = state.activePositions.map(p => `
+                <div class="position-item">
+                    <div class="position-header">
+                        <span class="position-phase">${p.phase}</span>
+                        <span class="position-amt">$${p.amt.toFixed(2)}</span>
+                    </div>
+                    <div class="position-details">
+                        Strike: $${p.strike.toFixed(2)} | KO: $${p.ko.toFixed(2)} | APR: ${p.apr.toFixed(2)}% | ${p.dur}d
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Render dual positions
         function renderDualPositions() {
-            const tbody = document.getElementById('dualTableBody');
-            const positions = state.dualPositions;
+            const container = document.getElementById('dualList');
+            document.getElementById('dualCount').textContent = state.dualPositions.length;
             
-            document.getElementById('dualCount').textContent = positions.length;
-            
-            if (positions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No active dual investment positions</td></tr>';
+            if (state.dualPositions.length === 0) {
+                container.innerHTML = '<div class="empty-state">No active positions</div>';
                 return;
             }
             
-            tbody.innerHTML = positions.map(p => `
-                <tr>
-                    <td>${p.product_id}</td>
-                    <td class="text-right">${p.invest_amount.toFixed(4)}</td>
-                    <td class="text-center">${p.invest_coin}</td>
-                    <td class="text-right">$${p.strike_price.toFixed(2)}</td>
-                    <td class="text-center">${p.settle_date || '--'}</td>
-                    <td class="text-right">${p.apr.toFixed(2)}%</td>
-                    <td class="text-right">$${p.value_usd.toFixed(2)}</td>
-                </tr>
-            `).join('');
-        }
-        
-        // Render active positions
-        function renderActivePositions() {
-            const tbody = document.getElementById('activeTableBody');
-            const positions = state.activePositions;
-            
-            document.getElementById('activeCount').textContent = positions.length;
-            
-            if (positions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No active positions</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = positions.map(p => `
-                <tr>
-                    <td><strong>${p.phase}</strong></td>
-                    <td class="text-right">$${p.amt.toFixed(2)}</td>
-                    <td class="text-right">$${p.strike.toFixed(2)}</td>
-                    <td class="text-right">$${p.ko.toFixed(2)}</td>
-                    <td class="text-right">${p.apr.toFixed(2)}%</td>
-                    <td class="text-center">${p.dur}d</td>
-                    <td class="text-center">${p.settle_date || '--'}</td>
-                </tr>
-            `).join('');
-        }
-        
-        // Render settled positions
-        function renderSettledPositions() {
-            const tbody = document.getElementById('settledTableBody');
-            const positions = state.settledPositions;
-            
-            document.getElementById('settledCount').textContent = positions.length;
-            
-            if (positions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No settled positions</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = positions.map(p => `
-                <tr>
-                    <td><strong>${p.phase}</strong></td>
-                    <td class="text-right">$${p.amt.toFixed(2)}</td>
-                    <td class="text-right">$${p.strike.toFixed(2)}</td>
-                    <td class="text-right">$${p.ko.toFixed(2)}</td>
-                    <td class="text-right">${p.apr.toFixed(2)}%</td>
-                    <td class="text-center">${p.settle_date || '--'}</td>
-                </tr>
+            container.innerHTML = state.dualPositions.map(p => `
+                <div class="position-item">
+                    <div class="position-header">
+                        <span class="position-phase">${p.invest_coin}</span>
+                        <span class="position-amt">$${p.value_usd.toFixed(2)}</span>
+                    </div>
+                    <div class="position-details">
+                        ${p.invest_amount.toFixed(4)} ${p.invest_coin} | Strike: $${p.strike_price.toFixed(2)} | APR: ${p.apr.toFixed(2)}%
+                    </div>
+                </div>
             `).join('');
         }
         
         // Update Live Bar
         function updateLiveBar() {
-            document.getElementById('liveEthPrice').textContent = '$' + state.ethPrice.toFixed(2);
+            document.getElementById('liveEthPrice').textContent = '$' + state.ethPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('liveUsdt').textContent = state.spotUsdt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('liveEth').textContent = state.spotEth.toFixed(6);
+            document.getElementById('liveEth').textContent = state.spotEth.toFixed(4);
             document.getElementById('liveFcnValue').textContent = '$' + state.fcnTotalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('liveDualValue').textContent = '$' + state.dualTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             
-            // Total portfolio = USDT + ETH*price + FCN + Dual
             const total = state.spotUsdt + (state.spotEth * state.ethPrice) + state.fcnTotalValue + state.dualTotal;
-            document.getElementById('liveTotal').textContent = '$' + total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        }
-        
-        // Show/hide panels
-        function showPanels() {
-            document.getElementById('liveBar').classList.remove('hidden');
-            document.getElementById('dualPanel').classList.remove('hidden');
-            document.getElementById('activePanel').classList.remove('hidden');
-            document.getElementById('settledPanel').classList.remove('hidden');
-            document.getElementById('calcPanel').classList.remove('hidden');
-        }
-        
-        // Update connection status
-        function updateStatus(msg, type) {
-            const el = document.getElementById('connStatus');
-            el.textContent = msg;
-            el.style.color = type === 'error' ? '#ff4444' : type === 'success' ? '#00ff88' : '#666';
+            document.getElementById('liveTotal').textContent = '$' + total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USDT';
         }
         
         // Calculate settlement
@@ -569,12 +844,12 @@
             const settlePrice = parseFloat(document.getElementById('settlePrice').value);
             
             if (!settlePrice || settlePrice <= 0) {
-                alert('Please enter a valid settlement price');
+                showToast('請輸入有效的結算價格', 'error');
                 return;
             }
             
             if (state.activePositions.length === 0) {
-                alert('No active positions to calculate');
+                showToast('沒有活躍倉位', 'error');
                 return;
             }
             
@@ -595,97 +870,44 @@
                 });
                 
                 renderCalcResults(data);
+                showToast('計算完成');
             } catch (e) {
                 console.error('Calculate error:', e);
-                alert('Calculation failed: ' + e.message);
-            }
-        }
-        
-        // Fetch settlement price
-        async function fetchSettlementPrice() {
-            if (state.activePositions.length === 0) {
-                alert('No active positions');
-                return;
-            }
-            
-            // Use the earliest settle date
-            const earliest = state.activePositions.reduce((min, p) => p.settle_ts < min.settle_ts ? p : min, state.activePositions[0]);
-            
-            try {
-                const data = await apiCall('/api/settlement-price', {
-                    timestamp: earliest.settle_ts
-                });
-                
-                if (data.price > 0) {
-                    document.getElementById('settlePrice').value = data.price.toFixed(2);
-                } else {
-                    alert('Could not fetch settlement price');
-                }
-            } catch (e) {
-                console.error('Fetch settlement price error:', e);
-                alert('Failed to fetch settlement price');
+                showToast('計算失敗', 'error');
             }
         }
         
         // Render calculation results
         function renderCalcResults(data) {
             const container = document.getElementById('calcResults');
+            const grid = document.getElementById('resultsGrid');
             
             if (!data.results || data.results.length === 0) {
-                container.innerHTML = '<div style="color: #666; padding: 20px;">No results</div>';
                 return;
             }
             
             const summary = data.summary;
             
-            container.innerHTML = `
-                <table style="margin-top: 15px;">
-                    <thead>
-                        <tr>
-                            <th>Phase</th>
-                            <th class="text-center">Scenario</th>
-                            <th class="text-right">USDT Return</th>
-                            <th class="text-right">ETH Return</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.results.map(r => `
-                            <tr>
-                                <td><strong>${r.phase}</strong></td>
-                                <td class="text-center scenario-${r.scenario.toLowerCase()}">${r.scenario}</td>
-                                <td class="text-right">$${r.usdt_return.toFixed(2)}</td>
-                                <td class="text-right">${r.eth_return.toFixed(6)}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                <div class="summary-box">
-                    <div class="summary-grid">
-                        <div class="summary-item">
-                            <div class="label">Total Reinvest</div>
-                            <div class="value">$${summary.total_reinvest.toFixed(2)}</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="label">Total Top-up</div>
-                            <div class="value">$${summary.total_topup.toFixed(2)}</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="label">Total Next</div>
-                            <div class="value">$${summary.total_next.toFixed(2)}</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="label">Total ETH</div>
-                            <div class="value">${summary.total_eth.toFixed(6)}</div>
-                        </div>
-                        ${summary.total_eth > 0 ? `
-                        <div class="summary-item">
-                            <div class="label">Avg ETH Cost</div>
-                            <div class="value">$${summary.total_eth_cost.toFixed(2)}</div>
-                        </div>
-                        ` : ''}
-                    </div>
+            grid.innerHTML = `
+                <div class="result-item">
+                    <div class="label">總再投資</div>
+                    <div class="value">$${summary.total_reinvest.toFixed(2)}</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">需補充</div>
+                    <div class="value">$${summary.total_topup.toFixed(2)}</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">下期總額</div>
+                    <div class="value">$${summary.total_next.toFixed(2)}</div>
+                </div>
+                <div class="result-item">
+                    <div class="label">獲得 ETH</div>
+                    <div class="value">${summary.total_eth.toFixed(6)}</div>
                 </div>
             `;
+            
+            container.classList.remove('hidden');
         }
         
         // Auto-refresh ETH price every 60s
