@@ -859,8 +859,20 @@ def api_history():
             # Auto-calculate settlement results
             calculated = []
             for pos in result_positions:
-                # Use actual settle price from history if available, otherwise need to fetch
-                settle_price = pos.get("actual_settle_price", 0)
+                settle_ts = pos.get("settle_ts", 0)
+                settle_price = 0
+                
+                # Try to fetch settlement price
+                if settle_ts > 0:
+                    try:
+                        settle_price = fetch_settlement_price(settle_ts)
+                    except:
+                        pass
+                
+                # Fallback: use strike price if fetch failed
+                if settle_price <= 0:
+                    settle_price = pos.get("strike", 0)
+                
                 if settle_price > 0:
                     scenario, usdt_return, eth_return = calculate_settlement(
                         pos["amt"], pos["strike"], pos["ko"], pos["apr"], pos["dur"], settle_price
@@ -868,6 +880,7 @@ def api_history():
                     pos["scenario"] = scenario
                     pos["usdt_return"] = usdt_return
                     pos["eth_return"] = eth_return
+                    pos["actual_settle_price"] = settle_price
                 calculated.append(pos)
             
             return jsonify({
@@ -908,10 +921,24 @@ def api_history():
             # Auto-calculate DCI settlement results
             calculated = []
             for pos in result_positions:
-                settle_price = pos.get("actual_settle_price", 0)
+                settle_ts = pos.get("settle_ts", 0)
+                settle_price = 0
+                
+                # Try to fetch settlement price
+                if settle_ts > 0:
+                    try:
+                        settle_price = fetch_settlement_price(settle_ts)
+                    except:
+                        pass
+                
+                # Fallback: use strike price if fetch failed
+                if settle_price <= 0:
+                    settle_price = pos.get("strike", 0)
+                
                 if settle_price > 0:
                     result = calculate_dci_settlement(pos, settle_price)
                     pos.update(result)
+                    pos["actual_settle_price"] = settle_price
                 calculated.append(pos)
             
             return jsonify({

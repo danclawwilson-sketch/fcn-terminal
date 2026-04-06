@@ -452,153 +452,140 @@
             margin-top: 4px;
         }
         
-        /* Form Fields */
-        .form-group {
+        /* History Section - Vertical Layout */
+        .history-section {
             margin-bottom: 16px;
         }
         
-        .form-label {
-            display: block;
-            font-size: 0.7em;
-            color: var(--txt2);
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-            text-align: center;
-        }
-        
-        .form-input {
-            width: 100%;
+        .history-section-header {
             background: var(--bg2);
             border: 1px solid var(--brd);
             border-radius: 8px;
-            padding: 16px;
-            color: var(--acc2);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 1.3em;
+            padding: 12px 16px;
+            margin-bottom: 12px;
             text-align: center;
-            transition: all 0.3s;
+            font-weight: 600;
         }
         
-        .form-input:focus {
+        .history-section.fcn .history-section-header {
+            border-top: 2px solid var(--bull);
+        }
+        
+        .history-section.dci .history-section-header {
+            border-top: 2px solid var(--range);
+        }
+        
+        .history-date-select {
+            width: 100%;
+            background: var(--sur);
+            border: 1px solid var(--brd);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--txt);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1em;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        
+        .history-date-select:focus {
             outline: none;
             border-color: var(--acc);
-            box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
         }
         
-        /* History Section - New Design */
-        .history-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         
-        .history-column {
+        .history-item {
             background: var(--bg2);
             border: 1px solid var(--brd);
             border-radius: 8px;
             padding: 12px;
         }
         
-        .history-column.fcn {
-            border-top: 2px solid var(--bull);
-        }
-        
-        .history-column.dci {
-            border-top: 2px solid var(--range);
-        }
-        
-        .history-col-header {
-            font-size: 0.8em;
-            font-weight: 600;
-            color: var(--txt);
-            margin-bottom: 12px;
-            text-align: center;
-        }
-        
-        .date-select {
-            width: 100%;
-            background: var(--sur);
-            border: 1px solid var(--brd);
-            border-radius: 6px;
-            padding: 8px;
-            color: var(--txt);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.8em;
-            margin-bottom: 12px;
-        }
-        
-        .date-select:focus {
-            outline: none;
-            border-color: var(--acc);
-        }
-        
-        .history-list-compact {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .history-item-compact {
-            background: var(--sur);
-            border: 1px solid var(--brd);
-            border-radius: 6px;
-            padding: 8px;
-            margin-bottom: 8px;
-            font-size: 0.75em;
-        }
-        
-        .history-item-compact .item-row {
+        .history-item .item-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
         
-        .history-item-compact .phase {
+        .history-item .phase {
             font-family: 'Share Tech Mono', monospace;
             color: var(--acc);
+            font-size: 1em;
+            font-weight: 600;
         }
         
-        .history-item-compact .scenario {
+        .history-item .scenario {
             font-size: 0.8em;
-            padding: 2px 6px;
+            padding: 4px 10px;
             border-radius: 4px;
             font-weight: 600;
         }
         
-        .history-item-compact .scenario.ko, .history-item-compact .scenario.a {
+        .history-item .scenario.ko, .history-item .scenario.a {
             background: rgba(0, 255, 136, 0.15);
             color: var(--bull);
         }
         
-        .history-item-compact .scenario.s1, .history-item-compact .scenario.s2, .history-item-compact .scenario.b {
+        .history-item .scenario.s1 {
+            background: rgba(255, 45, 85, 0.15);
+            color: var(--bear);
+        }
+        
+        .history-item .scenario.s2, .history-item .scenario.b {
             background: rgba(255, 184, 0, 0.15);
             color: var(--range);
         }
         
-        .history-item-compact .amount {
+        .history-item .detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            margin-bottom: 4px;
+        }
+        
+        .history-item .detail-label {
+            color: var(--txt2);
+        }
+        
+        .history-item .detail-value {
             font-family: 'Share Tech Mono', monospace;
             color: var(--txt);
         }
         
-        .history-item-compact .return {
-            color: var(--txt2);
-            font-size: 0.85em;
-        }
-        
-        .history-summary-compact {
-            background: var(--sur);
+        .history-summary {
+            background: var(--bg2);
             border: 1px solid var(--brd);
-            border-radius: 6px;
-            padding: 8px;
-            margin-top: 8px;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
             text-align: center;
-            font-size: 0.75em;
         }
         
-        .history-summary-compact .total {
+        .history-summary .label {
+            font-size: 0.7em;
+            color: var(--txt2);
+            margin-bottom: 4px;
+        }
+        
+        .history-summary .total {
             font-family: 'Share Tech Mono', monospace;
+            font-size: 1.3em;
             color: var(--acc2);
-            font-size: 1.1em;
+            margin-bottom: 4px;
+        }
+        
+        .history-summary .eth-cost {
+            font-size: 0.8em;
+            color: var(--txt2);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--brd);
         }
         
         /* Toast */
@@ -737,62 +724,34 @@
             </div>
         </div>
         
-        <!-- Settlement Control -->
-        <div class="card hidden" id="settlementCard">
-            <div class="card-body">
-                <h3 class="section-title">結算控制</h3>
-                
-                <div class="form-group">
-                    <label class="form-label">結算日期</label>
-                    <input type="text" class="form-input" id="settleDate" readonly placeholder="--">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">結算價格</label>
-                    <input type="number" class="form-input" id="settlePrice" placeholder="0.00" step="0.01">
-                    <div style="text-align: center; font-size: 0.7em; color: var(--txt2); margin-top: 4px;">USDT</div>
-                </div>
-                
-                <button class="btn-primary" onclick="calculateSettlement()">計算收益</button>
-                
-                <div id="calcResults" class="hidden">
-                    <div class="results-grid" id="resultsGrid">
-                        <!-- Results will be inserted here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- History Section - Two Columns -->
+        <!-- History Section - Vertical Layout -->
         <div class="card hidden" id="historyCard">
             <div class="card-header">
                 <h3>歷史持倉 (最近30天)</h3>
             </div>
             <div class="card-body">
-                <div class="history-grid">
-                    <!-- FCN History -->
-                    <div class="history-column fcn">
-                        <div class="history-col-header">折價買幣</div>
-                        <select class="date-select" id="fcnHistoryDate" onchange="loadFcnHistory()">
-                            <option value="">選擇結算日期</option>
-                        </select>
-                        <div class="history-list-compact" id="fcnHistoryList">
-                            <div class="empty-state">無歷史記錄</div>
-                        </div>
-                        <div class="history-summary-compact" id="fcnHistorySummary"></div>
+                <!-- FCN History -->
+                <div class="history-section fcn">
+                    <div class="history-section-header">折價買幣</div>
+                    <select class="history-date-select" id="fcnHistoryDate" onchange="loadFcnHistory()">
+                        <option value="">選擇結算日期</option>
+                    </select>
+                    <div class="history-list" id="fcnHistoryList">
+                        <div class="empty-state">無歷史記錄</div>
                     </div>
-                    
-                    <!-- DCI History -->
-                    <div class="history-column dci">
-                        <div class="history-col-header">高價賣出</div>
-                        <select class="date-select" id="dciHistoryDate" onchange="loadDciHistory()">
-                            <option value="">選擇結算日期</option>
-                        </select>
-                        <div class="history-list-compact" id="dciHistoryList">
-                            <div class="empty-state">無歷史記錄</div>
-                        </div>
-                        <div class="history-summary-compact" id="dciHistorySummary"></div>
+                    <div class="history-summary" id="fcnHistorySummary"></div>
+                </div>
+                
+                <!-- DCI History -->
+                <div class="history-section dci">
+                    <div class="history-section-header">高價賣出 (雙幣理財)</div>
+                    <select class="history-date-select" id="dciHistoryDate" onchange="loadDciHistory()">
+                        <option value="">選擇結算日期</option>
+                    </select>
+                    <div class="history-list" id="dciHistoryList">
+                        <div class="empty-state">無歷史記錄</div>
                     </div>
+                    <div class="history-summary" id="dciHistorySummary"></div>
                 </div>
             </div>
         </div>
@@ -869,7 +828,6 @@
                     document.getElementById('dashboardCard').classList.remove('hidden');
                     document.getElementById('positionsCard').classList.remove('hidden');
                     document.getElementById('dualCard').classList.remove('hidden');
-                    document.getElementById('settlementCard').classList.remove('hidden');
                     document.getElementById('historyCard').classList.remove('hidden');
                     
                     updateStatus(true);
@@ -947,7 +905,6 @@
                 renderPositions();
                 renderDualPositions();
                 updateDashboard();
-                updateSettlementDate();
                 
                 showToast('數據已同步');
             } catch (e) {
@@ -956,7 +913,7 @@
             }
         }
         
-        // Load history data for both FCN and DCI
+        // Load history data
         async function loadHistoryData() {
             if (!state.connected) return;
             
@@ -970,7 +927,6 @@
                 
                 if (fcnData.available_dates) {
                     state.fcnHistory.dates = fcnData.available_dates;
-                    state.fcnHistory.data = {};
                     
                     const fcnSelect = document.getElementById('fcnHistoryDate');
                     fcnSelect.innerHTML = '<option value="">選擇結算日期</option>';
@@ -978,10 +934,10 @@
                         fcnSelect.innerHTML += `<option value="${date}">${date}</option>`;
                     });
                     
-                    // Auto-select latest date
+                    // Auto-select latest date and load
                     if (fcnData.available_dates.length > 0) {
                         fcnSelect.value = fcnData.available_dates[0];
-                        loadFcnHistory();
+                        await loadFcnHistory();
                     }
                 }
                 
@@ -994,7 +950,6 @@
                 
                 if (dciData.available_dates) {
                     state.dciHistory.dates = dciData.available_dates;
-                    state.dciHistory.data = {};
                     
                     const dciSelect = document.getElementById('dciHistoryDate');
                     dciSelect.innerHTML = '<option value="">選擇結算日期</option>';
@@ -1002,10 +957,10 @@
                         dciSelect.innerHTML += `<option value="${date}">${date}</option>`;
                     });
                     
-                    // Auto-select latest date
+                    // Auto-select latest date and load
                     if (dciData.available_dates.length > 0) {
                         dciSelect.value = dciData.available_dates[0];
-                        loadDciHistory();
+                        await loadDciHistory();
                     }
                 }
             } catch (e) {
@@ -1013,10 +968,14 @@
             }
         }
         
-        // Load FCN history for selected date
+        // Load FCN history
         async function loadFcnHistory() {
             const date = document.getElementById('fcnHistoryDate').value;
-            if (!date) return;
+            if (!date) {
+                document.getElementById('fcnHistoryList').innerHTML = '<div class="empty-state">請選擇日期</div>';
+                document.getElementById('fcnHistorySummary').innerHTML = '';
+                return;
+            }
             
             try {
                 const data = await apiCall('/api/history', {
@@ -1029,13 +988,18 @@
                 renderFcnHistory(data);
             } catch (e) {
                 console.error('Load FCN history error:', e);
+                showToast('載入失敗', 'error');
             }
         }
         
-        // Load DCI history for selected date
+        // Load DCI history
         async function loadDciHistory() {
             const date = document.getElementById('dciHistoryDate').value;
-            if (!date) return;
+            if (!date) {
+                document.getElementById('dciHistoryList').innerHTML = '<div class="empty-state">請選擇日期</div>';
+                document.getElementById('dciHistorySummary').innerHTML = '';
+                return;
+            }
             
             try {
                 const data = await apiCall('/api/history', {
@@ -1048,6 +1012,7 @@
                 renderDciHistory(data);
             } catch (e) {
                 console.error('Load DCI history error:', e);
+                showToast('載入失敗', 'error');
             }
         }
         
@@ -1063,37 +1028,82 @@
                 return;
             }
             
+            // Sort by subscription time for phase ordering
+            const sorted = [...settled].sort((a, b) => (a.sub_ts || 0) - (b.sub_ts || 0));
+            
             let totalUsdt = 0;
             let totalEth = 0;
+            let totalInvested = 0;
             
-            list.innerHTML = settled.map(p => {
+            list.innerHTML = sorted.map((p, idx) => {
+                const phase = `P${idx + 1}`;
                 const scenario = p.scenario || '--';
                 const usdtReturn = p.usdt_return || 0;
                 const ethReturn = p.eth_return || 0;
+                const amt = p.amt || 0;
                 
                 totalUsdt += usdtReturn;
                 totalEth += ethReturn;
+                totalInvested += amt;
                 
                 const scenarioClass = scenario.toLowerCase();
-                const scenarioIcon = scenario === 'KO' ? '✅' : scenario === 'S1' ? '⚠️' : scenario === 'S2' ? '⚡' : '';
+                const scenarioText = scenario === 'KO' ? 'KO 獲利' : scenario === 'S1' ? 'S1 行權' : scenario === 'S2' ? 'S2 部分' : scenario;
+                
+                let returnText = '';
+                if (usdtReturn > 0 && ethReturn > 0) {
+                    returnText = `$${usdtReturn.toFixed(0)} + ${ethReturn.toFixed(4)} ETH`;
+                } else if (usdtReturn > 0) {
+                    returnText = `$${usdtReturn.toFixed(0)} USDT`;
+                } else if (ethReturn > 0) {
+                    returnText = `${ethReturn.toFixed(4)} ETH`;
+                } else {
+                    returnText = '--';
+                }
                 
                 return `
-                    <div class="history-item-compact">
-                        <div class="item-row">
-                            <span class="phase">${p.phase}</span>
-                            <span class="scenario ${scenarioClass}">${scenarioIcon} ${scenario}</span>
+                    <div class="history-item">
+                        <div class="item-header">
+                            <span class="phase">${phase}</span>
+                            <span class="scenario ${scenarioClass}">${scenarioText}</span>
                         </div>
-                        <div class="item-row">
-                            <span class="amount">$${p.amt.toFixed(0)}</span>
-                            <span class="return">${usdtReturn > 0 ? '$' + usdtReturn.toFixed(0) : ethReturn > 0 ? ethReturn.toFixed(4) + ' ETH' : '--'}</span>
+                        <div class="detail-row">
+                            <span class="detail-label">本期投入</span>
+                            <span class="detail-value">$${amt.toFixed(0)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Strike / KO</span>
+                            <span class="detail-value">$${p.strike?.toFixed(0) || '--'} / $${p.ko?.toFixed(0) || '--'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">結算結果</span>
+                            <span class="detail-value">${returnText}</span>
                         </div>
                     </div>
                 `;
             }).join('');
             
+            // Calculate ETH cost
+            let ethCostText = '';
+            if (totalEth > 0) {
+                const ethCost = (totalInvested - totalUsdt) / totalEth;
+                ethCostText = `<div class="eth-cost">ETH 持有成本: $${ethCost.toFixed(2)}/ETH</div>`;
+            }
+            
+            let totalText = '';
+            if (totalUsdt > 0 && totalEth > 0) {
+                totalText = `$${totalUsdt.toFixed(0)} + ${totalEth.toFixed(4)} ETH`;
+            } else if (totalUsdt > 0) {
+                totalText = `$${totalUsdt.toFixed(0)} USDT`;
+            } else if (totalEth > 0) {
+                totalText = `${totalEth.toFixed(4)} ETH`;
+            } else {
+                totalText = '--';
+            }
+            
             summary.innerHTML = `
-                <div class="total">${totalUsdt > 0 ? '$' + totalUsdt.toFixed(0) : totalEth > 0 ? totalEth.toFixed(4) + ' ETH' : '--'}</div>
-                <div>該批次返還</div>
+                <div class="label">該批次總返還</div>
+                <div class="total">${totalText}</div>
+                ${ethCostText}
             `;
         }
         
@@ -1109,38 +1119,72 @@
                 return;
             }
             
+            // Sort by subscription time for phase ordering
+            const sorted = [...settled].sort((a, b) => (a.sub_ts || 0) - (b.sub_ts || 0));
+            
             let totalUsdt = 0;
             let totalEth = 0;
             
-            list.innerHTML = settled.map(p => {
+            list.innerHTML = sorted.map((p, idx) => {
+                const phase = `P${idx + 1}`;
                 const scenario = p.scenario || '--';
                 const usdtReturn = p.usdt_return || 0;
                 const ethReturn = p.eth_return || 0;
                 const investCoin = p.invest_coin || 'USDT';
+                const investAmt = p.invest_amount || 0;
+                const valueUsd = investCoin === 'ETH' ? investAmt * p.strike : investAmt;
                 
                 totalUsdt += usdtReturn;
                 totalEth += ethReturn;
                 
                 const scenarioClass = scenario.toLowerCase();
-                const scenarioIcon = scenario === 'A' ? '✅' : '⚠️';
+                const scenarioText = scenario === 'A' ? 'A 正常' : 'B 行權';
+                
+                let returnText = '';
+                if (usdtReturn > 0) {
+                    returnText = `$${usdtReturn.toFixed(0)} USDT`;
+                } else if (ethReturn > 0) {
+                    returnText = `${ethReturn.toFixed(4)} ETH`;
+                } else {
+                    returnText = '--';
+                }
                 
                 return `
-                    <div class="history-item-compact">
-                        <div class="item-row">
-                            <span class="phase">${investCoin}</span>
-                            <span class="scenario ${scenarioClass}">${scenarioIcon} ${scenario}</span>
+                    <div class="history-item">
+                        <div class="item-header">
+                            <span class="phase">${phase}</span>
+                            <span class="scenario ${scenarioClass}">${scenarioText}</span>
                         </div>
-                        <div class="item-row">
-                            <span class="amount">${p.invest_amount.toFixed(4)} ${investCoin}</span>
-                            <span class="return">${usdtReturn > 0 ? '$' + usdtReturn.toFixed(0) : ethReturn > 0 ? ethReturn.toFixed(4) + ' ETH' : '--'}</span>
+                        <div class="detail-row">
+                            <span class="detail-label">本期投入</span>
+                            <span class="detail-value">${investAmt.toFixed(4)} ${investCoin} ($${valueUsd.toFixed(0)})</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Strike</span>
+                            <span class="detail-value">$${p.strike?.toFixed(0) || '--'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">結算結果</span>
+                            <span class="detail-value">${returnText}</span>
                         </div>
                     </div>
                 `;
             }).join('');
             
+            let totalText = '';
+            if (totalUsdt > 0 && totalEth > 0) {
+                totalText = `$${totalUsdt.toFixed(0)} + ${totalEth.toFixed(4)} ETH`;
+            } else if (totalUsdt > 0) {
+                totalText = `$${totalUsdt.toFixed(0)} USDT`;
+            } else if (totalEth > 0) {
+                totalText = `${totalEth.toFixed(4)} ETH`;
+            } else {
+                totalText = '--';
+            }
+            
             summary.innerHTML = `
-                <div class="total">${totalUsdt > 0 ? '$' + totalUsdt.toFixed(0) : totalEth > 0 ? totalEth.toFixed(4) + ' ETH' : '--'}</div>
-                <div>該批次返還</div>
+                <div class="label">該批次總返還</div>
+                <div class="total">${totalText}</div>
             `;
         }
         
@@ -1153,13 +1197,6 @@
             await loadHistoryData();
             btn.disabled = false;
             btn.textContent = '↓ SYNC';
-        }
-        
-        // Update settlement date
-        function updateSettlementDate() {
-            if (state.activePositions.length === 0) return;
-            const earliest = state.activePositions.reduce((min, p) => p.settle_ts < min.settle_ts ? p : min, state.activePositions[0]);
-            document.getElementById('settleDate').value = earliest.settle_date || '--';
         }
         
         // Render positions
@@ -1206,77 +1243,6 @@
                     </div>
                 </div>
             `).join('');
-        }
-        
-        // Calculate settlement
-        async function calculateSettlement() {
-            const settlePrice = parseFloat(document.getElementById('settlePrice').value);
-            
-            if (!settlePrice || settlePrice <= 0) {
-                showToast('請輸入有效的結算價格', 'error');
-                return;
-            }
-            
-            if (state.activePositions.length === 0) {
-                showToast('沒有活躍倉位', 'error');
-                return;
-            }
-            
-            try {
-                const data = await apiCall('/api/calculate', {
-                    api_key: state.apiKey,
-                    secret_key: state.secretKey,
-                    batch: state.activePositions.map(p => ({
-                        pid: p.pid,
-                        phase: p.phase,
-                        amt: p.amt,
-                        strike: p.strike,
-                        ko: p.ko,
-                        apr: p.apr,
-                        dur: p.dur
-                    })),
-                    settle_price: settlePrice
-                });
-                
-                renderCalcResults(data);
-                showToast('計算完成');
-            } catch (e) {
-                console.error('Calculate error:', e);
-                showToast('計算失敗', 'error');
-            }
-        }
-        
-        // Render calculation results
-        function renderCalcResults(data) {
-            const container = document.getElementById('calcResults');
-            const grid = document.getElementById('resultsGrid');
-            
-            if (!data.results || data.results.length === 0) {
-                return;
-            }
-            
-            const summary = data.summary;
-            
-            grid.innerHTML = `
-                <div class="result-item">
-                    <div class="label">總再投資</div>
-                    <div class="value">$${summary.total_reinvest.toFixed(2)}</div>
-                </div>
-                <div class="result-item">
-                    <div class="label">需補充</div>
-                    <div class="value">$${summary.total_topup.toFixed(2)}</div>
-                </div>
-                <div class="result-item">
-                    <div class="label">下期總額</div>
-                    <div class="value">$${summary.total_next.toFixed(2)}</div>
-                </div>
-                <div class="result-item">
-                    <div class="label">獲得 ETH</div>
-                    <div class="value">${summary.total_eth.toFixed(6)}</div>
-                </div>
-            `;
-            
-            container.classList.remove('hidden');
         }
         
         // Auto-refresh ETH price every 60s
