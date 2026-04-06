@@ -1254,7 +1254,10 @@
                         <span class="position-amt">$${p.amt.toFixed(2)}</span>
                     </div>
                     <div class="position-details">
-                        Strike: $${p.strike.toFixed(2)} | KO: $${p.ko.toFixed(2)} | APR: ${p.apr.toFixed(2)}% | ${p.dur}d
+                        結算日: ${p.settle_date || '--'} | ${p.dur}天
+                    </div>
+                    <div class="position-details">
+                        Strike: $${p.strike.toFixed(2)} | KO: $${p.ko.toFixed(2)} | APR: ${p.apr.toFixed(2)}%
                     </div>
                 </div>
             `).join('');
