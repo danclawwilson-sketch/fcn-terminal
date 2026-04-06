@@ -689,6 +689,60 @@ def api_eth_price():
         return jsonify({"error": f"Internal error: {str(e)}"}), 500
 
 
+# ---- POST /api/history ----
+@app.route("/api/history", methods=["POST"])
+def api_history():
+    """Fetch historical settled positions with date range."""
+    try:
+        body = request.get_json(silent=True) or {}
+        api_key, secret_key = _get_credentials(body)
+        if not api_key or not secret_key:
+            return jsonify({"error": "Missing credentials"}), 401
+        
+        # Get date range parameters
+        start_date = body.get("start_date")  # YYYY-MM-DD format
+        end_date = body.get("end_date")      # YYYY-MM-DD format
+        
+        # Calculate cutoff_days based on start_date
+        if start_date:
+            try:
+                start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+                days_diff = (datetime.utcnow() - start_dt).days
+                cutoff_days = max(1, min(days_diff + 30, 180))  # Max 180 days
+            except ValueError:
+                cutoff_days = 90  # Default 90 days if invalid date
+        else:
+            cutoff_days = 90  # Default 90 days
+        
+        # Get settled positions
+        _, settled = sync_positions(api_key, secret_key, cutoff_days)
+        
+        # Filter by date range if provided
+        if start_date or end_date:
+            filtered = []
+            for pos in settled:
+                pos_date = pos.get("settle_date")
+                if not pos_date:
+                    continue
+                
+                if start_date and pos_date < start_date:
+                    continue
+                if end_date and pos_date > end_date:
+                    continue
+                filtered.append(pos)
+            settled = filtered
+        
+        return jsonify({
+            "settled": settled,
+            "count": len(settled),
+            "start_date": start_date,
+            "end_date": end_date,
+        })
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": f"Internal error: {str(e)}"}), 500
+
+
 # ---- POST /api/sync ----
 @app.route("/api/sync", methods=["POST"])
 def api_sync():

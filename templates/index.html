@@ -485,6 +485,110 @@
             box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
         }
         
+        /* Date Range */
+        .date-range {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .date-input-group {
+            text-align: center;
+        }
+        
+        .date-label {
+            display: block;
+            font-size: 0.7em;
+            color: var(--txt2);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .date-input {
+            width: 100%;
+            background: var(--bg2);
+            border: 1px solid var(--brd);
+            border-radius: 8px;
+            padding: 10px;
+            color: var(--txt);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        
+        .date-input:focus {
+            outline: none;
+            border-color: var(--acc);
+        }
+        
+        /* History Results */
+        .history-summary {
+            background: var(--bg2);
+            border: 1px solid var(--brd);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            text-align: center;
+        }
+        
+        .history-summary .count {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5em;
+            color: var(--acc);
+        }
+        
+        .history-summary .label {
+            font-size: 0.7em;
+            color: var(--txt2);
+            margin-top: 4px;
+        }
+        
+        .history-list {
+            margin-top: 12px;
+        }
+        
+        .history-item {
+            background: var(--bg2);
+            border: 1px solid var(--brd);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .history-item .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .history-item .phase {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--acc);
+            font-size: 0.9em;
+        }
+        
+        .history-item .date {
+            font-size: 0.75em;
+            color: var(--txt2);
+            background: var(--sur);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        .history-item .amount {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1em;
+            color: var(--txt);
+            margin-bottom: 4px;
+        }
+        
+        .history-item .details {
+            font-size: 0.75em;
+            color: var(--txt2);
+        }
+        
         /* Toast */
         .toast {
             position: fixed;
@@ -646,6 +750,32 @@
                 </div>
             </div>
         </div>
+        
+        <!-- History Query -->
+        <div class="card hidden" id="historyCard">
+            <div class="card-header">
+                <h3>歷史持倉查詢</h3>
+            </div>
+            <div class="card-body">
+                <div class="date-range">
+                    <div class="date-input-group">
+                        <label class="date-label">開始日期</label>
+                        <input type="date" class="date-input" id="historyStartDate">
+                    </div>
+                    <div class="date-input-group">
+                        <label class="date-label">結束日期</label>
+                        <input type="date" class="date-input" id="historyEndDate">
+                    </div>
+                </div>
+                
+                <button class="btn-primary" onclick="queryHistory()" id="historyBtn">查詢歷史</button>
+                
+                <div id="historyResults" class="hidden">
+                    <div class="history-summary" id="historySummary"></div>
+                    <div class="history-list" id="historyList"></div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div class="toast" id="toast"></div>
@@ -718,6 +848,7 @@
                     document.getElementById('positionsCard').classList.remove('hidden');
                     document.getElementById('dualCard').classList.remove('hidden');
                     document.getElementById('settlementCard').classList.remove('hidden');
+                    document.getElementById('historyCard').classList.remove('hidden');
                     
                     updateStatus(true);
                     updateDashboard();
@@ -938,6 +1069,79 @@
                     <div class="value">${summary.total_eth.toFixed(6)}</div>
                 </div>
             `;
+            
+            container.classList.remove('hidden');
+        }
+        
+        // Query history
+        async function queryHistory() {
+            const startDate = document.getElementById('historyStartDate').value;
+            const endDate = document.getElementById('historyEndDate').value;
+            const btn = document.getElementById('historyBtn');
+            
+            if (!startDate && !endDate) {
+                showToast('請選擇開始或結束日期', 'error');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '查詢中...';
+            
+            try {
+                const data = await apiCall('/api/history', {
+                    api_key: state.apiKey,
+                    secret_key: state.secretKey,
+                    start_date: startDate || undefined,
+                    end_date: endDate || undefined
+                });
+                
+                renderHistoryResults(data);
+                showToast(`查詢完成，共 ${data.count} 筆`);
+            } catch (e) {
+                console.error('History query error:', e);
+                showToast('查詢失敗', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '查詢歷史';
+            }
+        }
+        
+        // Render history results
+        function renderHistoryResults(data) {
+            const container = document.getElementById('historyResults');
+            const summary = document.getElementById('historySummary');
+            const list = document.getElementById('historyList');
+            
+            const settled = data.settled || [];
+            
+            // Summary
+            summary.innerHTML = `
+                <div class="count">${settled.length}</div>
+                <div class="label">已結算倉位</div>
+                ${data.start_date || data.end_date ? `
+                <div style="font-size: 0.7em; color: var(--txt2); margin-top: 8px;">
+                    ${data.start_date || '開始'} ~ ${data.end_date || '現在'}
+                </div>
+                ` : ''}
+            `;
+            
+            // List
+            if (settled.length === 0) {
+                list.innerHTML = '<div class="empty-state">無歷史持倉記錄</div>';
+            } else {
+                list.innerHTML = settled.map(p => `
+                    <div class="history-item">
+                        <div class="item-header">
+                            <span class="phase">${p.phase}</span>
+                            <span class="date">${p.settle_date || '--'}</span>
+                        </div>
+                        <div class="amount">$${p.amt.toFixed(2)}</div>
+                        <div class="details">
+                            Strike: $${p.strike.toFixed(2)} | KO: $${p.ko.toFixed(2)} | APR: ${p.apr.toFixed(2)}% | ${p.dur}d
+                        </div>
+                    </div>
+                `).join('');
+            }
             
             container.classList.remove('hidden');
         }
