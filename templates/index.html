@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCN Terminal v3.0</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+            background: #0a0a0a;
+            color: #00ff88;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #00ff88;
+            margin-bottom: 20px;
+        }
+        .header h1 { font-size: 2em; letter-spacing: 4px; }
+        .header .subtitle { color: #666; font-size: 0.9em; margin-top: 5px; }
+        
+        /* Connection Panel */
+        .conn-panel {
+            background: #111;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .conn-panel h3 { margin-bottom: 15px; color: #00ff88; }
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .input-group input {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #00ff88;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .btn {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .btn:hover { background: #00cc6a; }
+        .btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .status { margin-top: 10px; font-size: 12px; color: #666; }
+        
+        /* Live Bar */
+        .live-bar {
+            background: #111;
+            border: 1px solid #00ff88;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .live-item {
+            text-align: center;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+        }
+        .live-item .label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .live-item .value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        .live-item .value.warning { color: #ffaa00; }
+        .live-item .value.error { color: #ff4444; }
+        .sync-row {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #333;
+        }
+        
+        /* Panels */
+        .panel {
+            background: #111;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .panel-header {
+            background: #1a1a1a;
+            padding: 12px 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-header h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .panel-header .badge {
+            background: #00ff88;
+            color: #000;
+            padding: 2px 8px;
+            font-size: 11px;
+            border-radius: 2px;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #222;
+        }
+        th {
+            background: #0a0a0a;
+            color: #00ff88;
+            font-weight: normal;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+        tr:hover { background: #1a1a1a; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        
+        /* Scenario badges */
+        .scenario-ko { color: #00ff88; }
+        .scenario-s1 { color: #ff4444; }
+        .scenario-s2 { color: #ffaa00; }
+        
+        /* Calculation Panel */
+        .calc-panel {
+            background: #111;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .calc-inputs {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 10px;
+            align-items: end;
+        }
+        .calc-inputs input {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #00ff88;
+            padding: 10px;
+            font-family: monospace;
+        }
+        
+        /* Summary Box */
+        .summary-box {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .summary-item {
+            text-align: center;
+        }
+        .summary-item .label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .summary-item .value {
+            font-size: 16px;
+            color: #00ff88;
+            margin-top: 5px;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        /* Hidden */
+        .hidden { display: none !important; }
+        
+        /* Checkbox */
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>FCN TERMINAL v3.0</h1>
+            <div class="subtitle">Binance Structured Product Portfolio Manager</div>
+        </div>
+        
+        <!-- Connection Panel -->
+        <div class="conn-panel">
+            <h3>🔌 API Connection</h3>
+            <div class="input-group">
+                <input type="text" id="apiKey" placeholder="API Key" autocomplete="off">
+                <input type="password" id="secretKey" placeholder="Secret Key" autocomplete="off">
+                <button class="btn" id="connectBtn" onclick="connect()">Connect</button>
+            </div>
+            <div class="status" id="connStatus">Not connected</div>
+        </div>
+        
+        <!-- Live Bar -->
+        <div class="live-bar hidden" id="liveBar">
+            <div class="live-item">
+                <div class="label">ETH/USDT</div>
+                <div class="value" id="liveEthPrice">--</div>
+            </div>
+            <div class="live-item">
+                <div class="label">USDT Balance</div>
+                <div class="value" id="liveUsdt">--</div>
+            </div>
+            <div class="live-item">
+                <div class="label">ETH Balance</div>
+                <div class="value" id="liveEth">--</div>
+            </div>
+            <div class="live-item">
+                <div class="label">FCN Position Value</div>
+                <div class="value" id="liveFcnValue">--</div>
+            </div>
+            <div class="live-item">
+                <div class="label">Dual Investment</div>
+                <div class="value" id="liveDualValue">--</div>
+            </div>
+            <div class="live-item">
+                <div class="label">Total Portfolio</div>
+                <div class="value" id="liveTotal">--</div>
+            </div>
+            <div class="sync-row">
+                <button class="btn" onclick="syncData()">↻ SYNC</button>
+                <span id="lastSync" style="color: #666; font-size: 11px;">Never</span>
+            </div>
+        </div>
+        
+        <!-- Dual Investment Positions -->
+        <div class="panel hidden" id="dualPanel">
+            <div class="panel-header">
+                <h3>Dual Investment 持倉</h3>
+                <span class="badge" id="dualCount">0</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>產品ID</th>
+                        <th class="text-right">投入</th>
+                        <th class="text-center">幣種</th>
+                        <th class="text-right">行權價</th>
+                        <th class="text-center">結算日</th>
+                        <th class="text-right">APR</th>
+                        <th class="text-right">當前價值 (USD)</th>
+                    </tr>
+                </thead>
+                <tbody id="dualTableBody">
+                    <tr><td colspan="7" class="empty-state">No data</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- FCN Active Positions -->
+        <div class="panel hidden" id="activePanel">
+            <div class="panel-header">
+                <h3>FCN Active Positions</h3>
+                <span class="badge" id="activeCount">0</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th class="text-right">Amount (USDT)</th>
+                        <th class="text-right">Strike</th>
+                        <th class="text-right">KO</th>
+                        <th class="text-right">APR</th>
+                        <th class="text-center">Duration</th>
+                        <th class="text-center">Settle Date</th>
+                    </tr>
+                </thead>
+                <tbody id="activeTableBody">
+                    <tr><td colspan="7" class="empty-state">No active positions</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- FCN Settled Positions -->
+        <div class="panel hidden" id="settledPanel">
+            <div class="panel-header">
+                <h3>FCN Settled Positions</h3>
+                <span class="badge" id="settledCount">0</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th class="text-right">Amount</th>
+                        <th class="text-right">Strike</th>
+                        <th class="text-right">KO</th>
+                        <th class="text-right">APR</th>
+                        <th class="text-center">Settle Date</th>
+                    </tr>
+                </thead>
+                <tbody id="settledTableBody">
+                    <tr><td colspan="6" class="empty-state">No settled positions</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Settlement Calculator -->
+        <div class="calc-panel hidden" id="calcPanel">
+            <h3 style="margin-bottom: 15px;">🧮 Settlement Calculator</h3>
+            <div class="calc-inputs">
+                <input type="number" id="settlePrice" placeholder="Settlement Price (e.g., 2157.87)" step="0.01">
+                <button class="btn" onclick="calculateSettlement()">Calculate</button>
+                <button class="btn" onclick="fetchSettlementPrice()" style="background: #333; color: #00ff88;">Get Settlement Price</button>
+            </div>
+            <div id="calcResults"></div>
+        </div>
+    </div>
+    
+    <script>
+        // State
+        let state = {
+            connected: false,
+            apiKey: '',
+            secretKey: '',
+            ethPrice: 0,
+            spotUsdt: 0,
+            spotEth: 0,
+            dualTotal: 0,
+            dualPositions: [],
+            activePositions: [],
+            settledPositions: [],
+            fcnTotalValue: 0
+        };
+        
+        // API helper
+        async function apiCall(endpoint, data) {
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return await res.json();
+        }
+        
+        // Connect
+        async function connect() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const secretKey = document.getElementById('secretKey').value.trim();
+            
+            if (!apiKey || !secretKey) {
+                updateStatus('Please enter both API Key and Secret Key', 'error');
+                return;
+            }
+            
+            updateStatus('Connecting...', 'info');
+            
+            try {
+                const data = await apiCall('/api/connect', { api_key: apiKey, secret_key: secretKey });
+                
+                if (data.success) {
+                    state.connected = true;
+                    state.apiKey = apiKey;
+                    state.secretKey = secretKey;
+                    state.ethPrice = data.eth_price;
+                    state.spotUsdt = data.spot_usdt || 0;
+                    state.spotEth = data.spot_eth || 0;
+                    state.dualTotal = data.dual_total || 0;
+                    
+                    updateStatus('Connected successfully', 'success');
+                    showPanels();
+                    updateLiveBar();
+                    
+                    // Load positions
+                    await loadPositions();
+                } else {
+                    updateStatus('Connection failed: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (e) {
+                updateStatus('Error: ' + e.message, 'error');
+            }
+        }
+        
+        // Load positions
+        async function loadPositions() {
+            if (!state.connected) return;
+            
+            try {
+                const data = await apiCall('/api/positions', {
+                    api_key: state.apiKey,
+                    secret_key: state.secretKey
+                });
+                
+                state.activePositions = data.active || [];
+                state.settledPositions = data.settled || [];
+                state.spotUsdt = data.spot_usdt || 0;
+                state.spotEth = data.spot_eth || 0;
+                state.dualTotal = data.dual_total || 0;
+                state.dualPositions = (data.dual_investment && data.dual_investment.positions) || [];
+                state.ethPrice = data.eth_price || 0;
+                
+                // Calculate FCN position value
+                state.fcnTotalValue = state.activePositions.reduce((sum, p) => sum + (p.amt || 0), 0);
+                
+                renderDualPositions();
+                renderActivePositions();
+                renderSettledPositions();
+                updateLiveBar();
+                
+                document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
+            } catch (e) {
+                console.error('Load positions error:', e);
+            }
+        }
+        
+        // Sync data
+        async function syncData() {
+            if (!state.connected) return;
+            
+            document.getElementById('lastSync').textContent = 'Syncing...';
+            await loadPositions();
+        }
+        
+        // Render Dual Investment positions
+        function renderDualPositions() {
+            const tbody = document.getElementById('dualTableBody');
+            const positions = state.dualPositions;
+            
+            document.getElementById('dualCount').textContent = positions.length;
+            
+            if (positions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No active dual investment positions</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = positions.map(p => `
+                <tr>
+                    <td>${p.product_id}</td>
+                    <td class="text-right">${p.invest_amount.toFixed(4)}</td>
+                    <td class="text-center">${p.invest_coin}</td>
+                    <td class="text-right">$${p.strike_price.toFixed(2)}</td>
+                    <td class="text-center">${p.settle_date || '--'}</td>
+                    <td class="text-right">${p.apr.toFixed(2)}%</td>
+                    <td class="text-right">$${p.value_usd.toFixed(2)}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Render active positions
+        function renderActivePositions() {
+            const tbody = document.getElementById('activeTableBody');
+            const positions = state.activePositions;
+            
+            document.getElementById('activeCount').textContent = positions.length;
+            
+            if (positions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No active positions</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = positions.map(p => `
+                <tr>
+                    <td><strong>${p.phase}</strong></td>
+                    <td class="text-right">$${p.amt.toFixed(2)}</td>
+                    <td class="text-right">$${p.strike.toFixed(2)}</td>
+                    <td class="text-right">$${p.ko.toFixed(2)}</td>
+                    <td class="text-right">${p.apr.toFixed(2)}%</td>
+                    <td class="text-center">${p.dur}d</td>
+                    <td class="text-center">${p.settle_date || '--'}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Render settled positions
+        function renderSettledPositions() {
+            const tbody = document.getElementById('settledTableBody');
+            const positions = state.settledPositions;
+            
+            document.getElementById('settledCount').textContent = positions.length;
+            
+            if (positions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No settled positions</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = positions.map(p => `
+                <tr>
+                    <td><strong>${p.phase}</strong></td>
+                    <td class="text-right">$${p.amt.toFixed(2)}</td>
+                    <td class="text-right">$${p.strike.toFixed(2)}</td>
+                    <td class="text-right">$${p.ko.toFixed(2)}</td>
+                    <td class="text-right">${p.apr.toFixed(2)}%</td>
+                    <td class="text-center">${p.settle_date || '--'}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Update Live Bar
+        function updateLiveBar() {
+            document.getElementById('liveEthPrice').textContent = '$' + state.ethPrice.toFixed(2);
+            document.getElementById('liveUsdt').textContent = state.spotUsdt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('liveEth').textContent = state.spotEth.toFixed(6);
+            document.getElementById('liveFcnValue').textContent = '$' + state.fcnTotalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('liveDualValue').textContent = '$' + state.dualTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            // Total portfolio = USDT + ETH*price + FCN + Dual
+            const total = state.spotUsdt + (state.spotEth * state.ethPrice) + state.fcnTotalValue + state.dualTotal;
+            document.getElementById('liveTotal').textContent = '$' + total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        
+        // Show/hide panels
+        function showPanels() {
+            document.getElementById('liveBar').classList.remove('hidden');
+            document.getElementById('dualPanel').classList.remove('hidden');
+            document.getElementById('activePanel').classList.remove('hidden');
+            document.getElementById('settledPanel').classList.remove('hidden');
+            document.getElementById('calcPanel').classList.remove('hidden');
+        }
+        
+        // Update connection status
+        function updateStatus(msg, type) {
+            const el = document.getElementById('connStatus');
+            el.textContent = msg;
+            el.style.color = type === 'error' ? '#ff4444' : type === 'success' ? '#00ff88' : '#666';
+        }
+        
+        // Calculate settlement
+        async function calculateSettlement() {
+            const settlePrice = parseFloat(document.getElementById('settlePrice').value);
+            
+            if (!settlePrice || settlePrice <= 0) {
+                alert('Please enter a valid settlement price');
+                return;
+            }
+            
+            if (state.activePositions.length === 0) {
+                alert('No active positions to calculate');
+                return;
+            }
+            
+            try {
+                const data = await apiCall('/api/calculate', {
+                    api_key: state.apiKey,
+                    secret_key: state.secretKey,
+                    batch: state.activePositions.map(p => ({
+                        pid: p.pid,
+                        phase: p.phase,
+                        amt: p.amt,
+                        strike: p.strike,
+                        ko: p.ko,
+                        apr: p.apr,
+                        dur: p.dur
+                    })),
+                    settle_price: settlePrice
+                });
+                
+                renderCalcResults(data);
+            } catch (e) {
+                console.error('Calculate error:', e);
+                alert('Calculation failed: ' + e.message);
+            }
+        }
+        
+        // Fetch settlement price
+        async function fetchSettlementPrice() {
+            if (state.activePositions.length === 0) {
+                alert('No active positions');
+                return;
+            }
+            
+            // Use the earliest settle date
+            const earliest = state.activePositions.reduce((min, p) => p.settle_ts < min.settle_ts ? p : min, state.activePositions[0]);
+            
+            try {
+                const data = await apiCall('/api/settlement-price', {
+                    timestamp: earliest.settle_ts
+                });
+                
+                if (data.price > 0) {
+                    document.getElementById('settlePrice').value = data.price.toFixed(2);
+                } else {
+                    alert('Could not fetch settlement price');
+                }
+            } catch (e) {
+                console.error('Fetch settlement price error:', e);
+                alert('Failed to fetch settlement price');
+            }
+        }
+        
+        // Render calculation results
+        function renderCalcResults(data) {
+            const container = document.getElementById('calcResults');
+            
+            if (!data.results || data.results.length === 0) {
+                container.innerHTML = '<div style="color: #666; padding: 20px;">No results</div>';
+                return;
+            }
+            
+            const summary = data.summary;
+            
+            container.innerHTML = `
+                <table style="margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th>Phase</th>
+                            <th class="text-center">Scenario</th>
+                            <th class="text-right">USDT Return</th>
+                            <th class="text-right">ETH Return</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.results.map(r => `
+                            <tr>
+                                <td><strong>${r.phase}</strong></td>
+                                <td class="text-center scenario-${r.scenario.toLowerCase()}">${r.scenario}</td>
+                                <td class="text-right">$${r.usdt_return.toFixed(2)}</td>
+                                <td class="text-right">${r.eth_return.toFixed(6)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <div class="summary-box">
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="label">Total Reinvest</div>
+                            <div class="value">$${summary.total_reinvest.toFixed(2)}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="label">Total Top-up</div>
+                            <div class="value">$${summary.total_topup.toFixed(2)}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="label">Total Next</div>
+                            <div class="value">$${summary.total_next.toFixed(2)}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="label">Total ETH</div>
+                            <div class="value">${summary.total_eth.toFixed(6)}</div>
+                        </div>
+                        ${summary.total_eth > 0 ? `
+                        <div class="summary-item">
+                            <div class="label">Avg ETH Cost</div>
+                            <div class="value">$${summary.total_eth_cost.toFixed(2)}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Auto-refresh ETH price every 60s
+        setInterval(async () => {
+            if (!state.connected) return;
+            try {
+                const res = await fetch('/api/eth-price');
+                const data = await res.json();
+                if (data.price > 0) {
+                    state.ethPrice = data.price;
+                    updateLiveBar();
+                }
+            } catch (e) {
+                console.error('ETH price refresh error:', e);
+            }
+        }, 60000);
+    </script>
+</body>
+</html>
