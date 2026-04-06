@@ -1098,6 +1098,10 @@
                             <span class="detail-value">$${amt.toFixed(0)}</span>
                         </div>
                         <div class="detail-row">
+                            <span class="detail-label">結算日期</span>
+                            <span class="detail-value">${p.settle_date || '--'}</span>
+                        </div>
+                        <div class="detail-row">
                             <span class="detail-label">Strike / KO</span>
                             <span class="detail-value">$${p.strike?.toFixed(0) || '--'} / $${p.ko?.toFixed(0) || '--'}</span>
                         </div>
