@@ -563,11 +563,14 @@ def sync_positions(api_key: str, secret_key: str, cutoff_days: int = 8):
     cutoff_ms = int((time.time() - cutoff_days * 86400) * 1000)
 
     try:
+        print(f"[DEBUG] sync_positions called with cutoff_days={cutoff_days}", file=sys.stderr)
         data = _binance_get(
             "/sapi/v1/accumulator/product/position/list",
             {"pageSize": 100, "pageIndex": 1},
             api_key, secret_key,
         )
+        
+        print(f"[DEBUG] sync_positions got data: {type(data)}", file=sys.stderr)
         
         # Check for API error
         if data and isinstance(data, dict) and "code" in data:
@@ -577,11 +580,20 @@ def sync_positions(api_key: str, secret_key: str, cutoff_days: int = 8):
             # Return empty instead of error
             return active, settled
         
+        # Debug: print raw data structure
+        if data:
+            print(f"[DEBUG] sync_positions data keys: {data.keys() if isinstance(data, dict) else 'N/A'}", file=sys.stderr)
+            raw_list = _extract_list(data)
+            print(f"[DEBUG] sync_positions extracted {len(raw_list)} items", file=sys.stderr)
+        
     except Exception as e:
         print(f"[ERROR] sync_positions exception: {e}", file=sys.stderr)
         return active, settled
 
-    for p in _extract_list(data):
+    raw_positions = _extract_list(data)
+    print(f"[DEBUG] Processing {len(raw_positions)} positions", file=sys.stderr)
+    
+    for p in raw_positions:
         raw_pid = p.get("positionId", p.get("productId", "-"))
         try:
             pid = str(int(float(str(raw_pid))))
@@ -601,6 +613,8 @@ def sync_positions(api_key: str, secret_key: str, cutoff_days: int = 8):
         apr_pct = apr_raw * 100 if apr_raw < 1 else apr_raw  # safety
         dur = _safe_int(p.get("duration", 1), default=1)
         sub_ts = _safe_int(p.get("subscriptionTime", 0))
+        
+        print(f"[DEBUG] Position {pid}: status={status}, settle_ts={settle_ts}, amt={amt}", file=sys.stderr)
 
         item = {
             "pid": pid,
@@ -617,11 +631,15 @@ def sync_positions(api_key: str, secret_key: str, cutoff_days: int = 8):
         if status in ("SETTLED", "KNOCK_OUT", "EXPIRED") and settle_ts > 0:
             if settle_ts >= cutoff_ms:
                 settled.append(item)
+                print(f"[DEBUG] Added to settled: {pid}", file=sys.stderr)
         else:
             active.append(item)
+            print(f"[DEBUG] Added to active: {pid}", file=sys.stderr)
 
     active = _assign_phases(active)
     settled = _assign_phases(settled)
+    
+    print(f"[DEBUG] sync_positions returning: {len(active)} active, {len(settled)} settled", file=sys.stderr)
     return active, settled
 
 
