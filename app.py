@@ -141,7 +141,6 @@ def fetch_settlement_price(settle_ts: int) -> float:
     Fetch the settlement-window average price for a given timestamp.
     *settle_ts* is in **milliseconds**.
     Binance rule: arithmetic mean of per-second prices during 07:30-08:00 UTC.
-    We approximate with 1-min kline close averages.
     """
     try:
         settle_date = datetime.utcfromtimestamp(settle_ts / 1000)
@@ -150,36 +149,44 @@ def fetch_settlement_price(settle_ts: int) -> float:
         start_ms = int(start_dt.timestamp() * 1000)
         end_ms = int(end_dt.timestamp() * 1000)
         
-        print(f"[DEBUG] fetch_settlement_price: settle_ts={settle_ts}, date={settle_date}, window={start_dt} to {end_dt}", file=sys.stderr)
+        print(f"[DEBUG] fetch_settlement_price: date={settle_date.date()}, window=07:30-08:00 UTC", file=sys.stderr)
 
-        r = http_requests.get(
+        # Try multiple Binance API endpoints
+        endpoints = [
             "https://api.binance.com/api/v3/klines",
-            params={
-                "symbol": "ETHUSDT",
-                "interval": "1m",
-                "startTime": start_ms,
-                "endTime": end_ms,
-                "limit": 100,
-            },
-            headers=DEFAULT_HEADERS,
-            timeout=10,
-        )
-        print(f"[DEBUG] Binance klines response status: {r.status_code}", file=sys.stderr)
-        if r.status_code == 200:
-            klines = r.json()
-            print(f"[DEBUG] Got {len(klines)} klines", file=sys.stderr)
-            if klines:
-                closes = [float(k[4]) for k in klines]
-                avg = sum(closes) / len(closes)
-                print(f"[DEBUG] Average price: {avg}", file=sys.stderr)
-                return avg
-            else:
-                print(f"[DEBUG] No klines returned - settlement window may be in future", file=sys.stderr)
-        else:
-            print(f"[DEBUG] Binance API error: {r.status_code} - {r.text[:200]}", file=sys.stderr)
+            "https://api1.binance.com/api/v3/klines",
+            "https://api2.binance.com/api/v3/klines",
+            "https://api3.binance.com/api/v3/klines",
+        ]
+        
+        for url in endpoints:
+            try:
+                r = http_requests.get(
+                    url,
+                    params={
+                        "symbol": "ETHUSDT",
+                        "interval": "1m",
+                        "startTime": start_ms,
+                        "endTime": end_ms,
+                        "limit": 100,
+                    },
+                    headers=DEFAULT_HEADERS,
+                    timeout=10,
+                )
+                if r.status_code == 200:
+                    klines = r.json()
+                    if klines and len(klines) > 0:
+                        closes = [float(k[4]) for k in klines]
+                        avg = sum(closes) / len(closes)
+                        print(f"[DEBUG] Fetched {len(klines)} klines, avg={avg:.2f}", file=sys.stderr)
+                        return round(avg, 2)
+            except Exception as e:
+                print(f"[DEBUG] Endpoint {url} failed: {e}", file=sys.stderr)
+                continue
+        
+        print(f"[DEBUG] All endpoints failed for {settle_date.date()}", file=sys.stderr)
     except Exception as e:
-        print(f"[ERROR] fetch_settlement_price exception: {e}", file=sys.stderr)
-        traceback.print_exc()
+        print(f"[ERROR] fetch_settlement_price: {e}", file=sys.stderr)
     return 0.0
 
 

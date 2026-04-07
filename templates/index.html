@@ -1035,6 +1035,9 @@
                 
                 console.log('FCN history response:', data);
                 
+                // Store for recalculation
+                window.lastFcnHistoryData = data;
+                
                 if (data.error) {
                     console.error('API error:', data.error);
                     document.getElementById('fcnHistoryList').innerHTML = `<div class="empty-state">API錯誤: ${data.error}</div>`;
@@ -1130,11 +1133,40 @@
             // Sort by subscription time for phase ordering
             const sorted = [...settled].sort((a, b) => (a.sub_ts || 0) - (b.sub_ts || 0));
             
+            // Check if we need manual settlement price
+            const firstPos = sorted[0];
+            const hasAutoPrice = firstPos.actual_settle_price > 0;
+            const settleDate = firstPos.settle_date || '--';
+            
+            // Build header with settlement price input
+            let headerHtml = '';
+            if (!hasAutoPrice) {
+                headerHtml = `
+                    <div style="margin-bottom:16px;padding:12px;background:rgba(255,184,0,0.1);border:1px solid #ffb800;border-radius:8px;">
+                        <div style="color:#ffb800;font-weight:bold;margin-bottom:8px;">⚠️ 無法自動獲取 ${settleDate} 結算價格</div>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <input type="number" id="globalSettlePrice" placeholder="輸入結算價格 (USDT)" 
+                                style="flex:1;padding:8px 12px;background:#0a1220;border:1px solid #1a3560;color:#fff;border-radius:6px;font-size:0.9em;">
+                            <button onclick="recalculateAllPositions()" 
+                                style="padding:8px 16px;background:#00d9ff;color:#000;border:none;border-radius:6px;font-size:0.9em;font-weight:600;cursor:pointer;">
+                                計算全部
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                headerHtml = `
+                    <div style="margin-bottom:16px;padding:12px;background:rgba(0,255,136,0.1);border:1px solid #00ff88;border-radius:8px;">
+                        <div style="color:#00ff88;font-weight:bold;">✅ 已獲取結算價格: $${firstPos.actual_settle_price.toFixed(2)}</div>
+                    </div>
+                `;
+            }
+            
             let totalUsdt = 0;
             let totalEth = 0;
             let totalInvested = 0;
             
-            list.innerHTML = sorted.map((p, idx) => {
+            list.innerHTML = headerHtml + sorted.map((p, idx) => {
                 const phase = `P${idx + 1}`;
                 const scenario = p.scenario || '--';
                 const usdtReturn = p.usdt_return || 0;
@@ -1149,11 +1181,6 @@
                 const scenarioText = scenario === 'KO' ? 'KO 獲利' : scenario === 'S1' ? 'S1 行權' : scenario === 'S2' ? 'S2 部分' : scenario;
                 
                 let returnText = '';
-                let manualInput = '';
-                
-                // Check if settlement price failed to fetch
-                const hasSettlePrice = p.actual_settle_price > 0;
-                const showManualInput = !hasSettlePrice && p.error;
                 
                 if (usdtReturn > 0 && ethReturn > 0) {
                     returnText = `$${usdtReturn.toFixed(0)} + ${ethReturn.toFixed(4)} ETH`;
@@ -1161,12 +1188,6 @@
                     returnText = `$${usdtReturn.toFixed(0)} USDT`;
                 } else if (ethReturn > 0) {
                     returnText = `${ethReturn.toFixed(4)} ETH`;
-                } else if (showManualInput) {
-                    returnText = '<span style="color:#ff6b6b">無法獲取結算價格</span>';
-                    manualInput = `<div class="manual-price-input" style="margin-top:8px;">
-                        <input type="number" id="manualPrice-${p.pid}" placeholder="手動輸入結算價格" style="width:140px;padding:6px 10px;background:#0a1220;border:1px solid #1a3560;color:#fff;border-radius:6px;font-size:0.85em;">
-                        <button onclick="recalculatePosition('${p.pid}', ${p.amt}, ${p.strike}, ${p.ko}, ${p.apr}, ${p.dur})" style="margin-left:8px;padding:6px 12px;background:#00d9ff;color:#000;border:none;border-radius:6px;font-size:0.85em;cursor:pointer;">計算</button>
-                    </div>`;
                 } else {
                     returnText = '--';
                 }
@@ -1371,15 +1392,33 @@
             `).join('');
         }
         
-        // Recalculate position with manual settle price
-        async function recalculatePosition(pid, amt, strike, ko, apr, dur) {
-            const inputEl = document.getElementById(`manualPrice-${pid}`);
+        // Recalculate all positions with manual settle price
+        async function recalculateAllPositions() {
+            const inputEl = document.getElementById('globalSettlePrice');
             const settlePrice = parseFloat(inputEl.value);
             
             if (!settlePrice || settlePrice <= 0) {
                 alert('請輸入有效的結算價格');
                 return;
             }
+            
+            // Get current data from last API call
+            const currentData = window.lastFcnHistoryData;
+            if (!currentData || !currentData.settled) {
+                alert('無法獲取持倉資料，請先載入歷史記錄');
+                return;
+            }
+            
+            // Build batch from all positions
+            const batch = currentData.settled.map((p, idx) => ({
+                pid: p.pid || `P${idx+1}`,
+                phase: `P${idx+1}`,
+                amt: p.amt,
+                strike: p.strike,
+                ko: p.ko,
+                apr: p.apr,
+                dur: p.dur
+            }));
             
             try {
                 const res = await fetch('/api/calculate', {
@@ -1388,31 +1427,39 @@
                     body: JSON.stringify({
                         api_key: state.apiKey,
                         secret_key: state.secretKey,
-                        batch: [{
-                            pid: pid,
-                            phase: 'P1',
-                            amt: amt,
-                            strike: strike,
-                            ko: ko,
-                            apr: apr,
-                            dur: dur
-                        }],
+                        batch: batch,
                         settle_price: settlePrice
                     })
                 });
                 
                 const data = await res.json();
-                if (data.results && data.results[0]) {
-                    const r = data.results[0];
-                    alert(`計算結果:\n情境: ${r.scenario}\nUSDT返還: $${r.usdt_return.toFixed(2)}\nETH返還: ${r.eth_return.toFixed(6)}`);
-                    // Reload to show updated results
-                    await loadFcnHistory();
+                if (data.results) {
+                    // Update positions with calculated results
+                    currentData.settled = currentData.settled.map((p, idx) => {
+                        const r = data.results[idx];
+                        if (r) {
+                            return {
+                                ...p,
+                                scenario: r.scenario,
+                                usdt_return: r.usdt_return,
+                                eth_return: r.eth_return,
+                                actual_settle_price: settlePrice
+                            };
+                        }
+                        return p;
+                    });
+                    
+                    // Re-render with updated data
+                    renderFcnHistory(currentData);
                 }
             } catch (e) {
                 console.error('Recalculate error:', e);
                 alert('計算失敗，請重試');
             }
         }
+        
+        // Store last FCN history data for recalculation
+        window.lastFcnHistoryData = null;
 
         // Auto-refresh ETH price every 60s
         setInterval(async () => {
