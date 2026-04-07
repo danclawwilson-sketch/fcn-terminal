@@ -149,6 +149,8 @@ def fetch_settlement_price(settle_ts: int) -> float:
         end_dt = settle_date.replace(hour=8, minute=0, second=0, microsecond=0)
         start_ms = int(start_dt.timestamp() * 1000)
         end_ms = int(end_dt.timestamp() * 1000)
+        
+        print(f"[DEBUG] fetch_settlement_price: settle_ts={settle_ts}, date={settle_date}, window={start_dt} to {end_dt}", file=sys.stderr)
 
         r = http_requests.get(
             "https://api.binance.com/api/v3/klines",
@@ -162,13 +164,22 @@ def fetch_settlement_price(settle_ts: int) -> float:
             headers=DEFAULT_HEADERS,
             timeout=10,
         )
+        print(f"[DEBUG] Binance klines response status: {r.status_code}", file=sys.stderr)
         if r.status_code == 200:
             klines = r.json()
+            print(f"[DEBUG] Got {len(klines)} klines", file=sys.stderr)
             if klines:
                 closes = [float(k[4]) for k in klines]
-                return sum(closes) / len(closes)
-    except Exception:
-        pass
+                avg = sum(closes) / len(closes)
+                print(f"[DEBUG] Average price: {avg}", file=sys.stderr)
+                return avg
+            else:
+                print(f"[DEBUG] No klines returned - settlement window may be in future", file=sys.stderr)
+        else:
+            print(f"[DEBUG] Binance API error: {r.status_code} - {r.text[:200]}", file=sys.stderr)
+    except Exception as e:
+        print(f"[ERROR] fetch_settlement_price exception: {e}", file=sys.stderr)
+        traceback.print_exc()
     return 0.0
 
 

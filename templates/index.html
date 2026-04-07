@@ -1141,6 +1141,7 @@
                             <span class="detail-label">結算結果</span>
                             <span class="detail-value">${returnText}</span>
                         </div>
+                        ${manualInput}
                     </div>
                 `;
             }).join('');
@@ -1318,6 +1319,49 @@
             `).join('');
         }
         
+        // Recalculate position with manual settle price
+        async function recalculatePosition(pid, amt, strike, ko, apr, dur) {
+            const inputEl = document.getElementById(`manualPrice-${pid}`);
+            const settlePrice = parseFloat(inputEl.value);
+            
+            if (!settlePrice || settlePrice <= 0) {
+                alert('請輸入有效的結算價格');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/calculate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        api_key: state.apiKey,
+                        secret_key: state.secretKey,
+                        batch: [{
+                            pid: pid,
+                            phase: 'P1',
+                            amt: amt,
+                            strike: strike,
+                            ko: ko,
+                            apr: apr,
+                            dur: dur
+                        }],
+                        settle_price: settlePrice
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.results && data.results[0]) {
+                    const r = data.results[0];
+                    alert(`計算結果:\n情境: ${r.scenario}\nUSDT返還: $${r.usdt_return.toFixed(2)}\nETH返還: ${r.eth_return.toFixed(6)}`);
+                    // Reload to show updated results
+                    await loadFcnHistory();
+                }
+            } catch (e) {
+                console.error('Recalculate error:', e);
+                alert('計算失敗，請重試');
+            }
+        }
+
         // Auto-refresh ETH price every 60s
         setInterval(async () => {
             if (!state.connected) return;
