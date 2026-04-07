@@ -864,7 +864,16 @@ def api_history():
         
         if product_type == "fcn":
             # Get FCN settled positions
-            _, settled = sync_positions(api_key, secret_key, cutoff_days)
+            active, settled = sync_positions(api_key, secret_key, cutoff_days)
+            
+            # Debug info to return
+            debug_info = {
+                "active_count": len(active),
+                "settled_count": len(settled),
+                "available_dates": [],
+                "requested_date": settle_date,
+                "message": ""
+            }
             
             # Group by settle_date
             date_groups = {}
@@ -877,6 +886,7 @@ def api_history():
             
             # Get all available dates (sorted)
             available_dates = sorted(date_groups.keys(), reverse=True)
+            debug_info["available_dates"] = available_dates
             
             # If specific date requested, filter
             if settle_date and settle_date in date_groups:
@@ -888,6 +898,17 @@ def api_history():
             else:
                 result_positions = []
                 settle_date = None
+                debug_info["message"] = f"No settled positions found. You have {len(active)} active positions."
+                if len(active) > 0:
+                    debug_info["message"] += " Active positions haven't settled yet."
+                return jsonify({
+                    "type": "fcn",
+                    "settled": [],
+                    "count": 0,
+                    "settle_date": settle_date,
+                    "available_dates": [],
+                    "debug": debug_info
+                })
             
             # Auto-calculate settlement results
             calculated = []
@@ -920,12 +941,16 @@ def api_history():
                     pos["error"] = "無法獲取結算價格"
                 calculated.append(pos)
             
+            debug_info["result_count"] = len(calculated)
+            debug_info["message"] = f"找到 {len(calculated)} 個結算記錄"
+            
             return jsonify({
                 "type": "fcn",
                 "settled": calculated,
                 "count": len(calculated),
                 "settle_date": settle_date,
                 "available_dates": available_dates,
+                "debug": debug_info,
             })
             
         elif product_type == "dci":

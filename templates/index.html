@@ -1108,7 +1108,21 @@
             const settled = data.settled || [];
             
             if (settled.length === 0) {
-                list.innerHTML = '<div class="empty-state">無歷史記錄</div>';
+                // Show debug info if available
+                let debugMsg = '無歷史記錄';
+                if (data.debug) {
+                    debugMsg = `<div style="text-align:left;padding:12px;background:rgba(255,107,107,0.1);border:1px solid #ff6b6b;border-radius:8px;">
+                        <div style="color:#ff6b6b;font-weight:bold;margin-bottom:8px;">📊 診斷資訊</div>
+                        <div style="font-size:0.9em;color:#ccc;line-height:1.6;">
+                            <div>• 活躍持倉: ${data.debug.active_count} 個</div>
+                            <div>• 已結算: ${data.debug.settled_count} 個</div>
+                            <div>• 可用日期: ${data.debug.available_dates.join(', ') || '無'}</div>
+                            <div>• 請求日期: ${data.debug.requested_date || '未指定'}</div>
+                            ${data.debug.message ? `<div style="margin-top:8px;color:#ffb800;">💡 ${data.debug.message}</div>` : ''}
+                        </div>
+                    </div>`;
+                }
+                list.innerHTML = `<div class="empty-state">${debugMsg}</div>`;
                 summary.innerHTML = '';
                 return;
             }
