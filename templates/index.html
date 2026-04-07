@@ -1149,12 +1149,24 @@
                 const scenarioText = scenario === 'KO' ? 'KO 獲利' : scenario === 'S1' ? 'S1 行權' : scenario === 'S2' ? 'S2 部分' : scenario;
                 
                 let returnText = '';
+                let manualInput = '';
+                
+                // Check if settlement price failed to fetch
+                const hasSettlePrice = p.actual_settle_price > 0;
+                const showManualInput = !hasSettlePrice && p.error;
+                
                 if (usdtReturn > 0 && ethReturn > 0) {
                     returnText = `$${usdtReturn.toFixed(0)} + ${ethReturn.toFixed(4)} ETH`;
                 } else if (usdtReturn > 0) {
                     returnText = `$${usdtReturn.toFixed(0)} USDT`;
                 } else if (ethReturn > 0) {
                     returnText = `${ethReturn.toFixed(4)} ETH`;
+                } else if (showManualInput) {
+                    returnText = '<span style="color:#ff6b6b">無法獲取結算價格</span>';
+                    manualInput = `<div class="manual-price-input" style="margin-top:8px;">
+                        <input type="number" id="manualPrice-${p.pid}" placeholder="手動輸入結算價格" style="width:140px;padding:6px 10px;background:#0a1220;border:1px solid #1a3560;color:#fff;border-radius:6px;font-size:0.85em;">
+                        <button onclick="recalculatePosition('${p.pid}', ${p.amt}, ${p.strike}, ${p.ko}, ${p.apr}, ${p.dur})" style="margin-left:8px;padding:6px 12px;background:#00d9ff;color:#000;border:none;border-radius:6px;font-size:0.85em;cursor:pointer;">計算</button>
+                    </div>`;
                 } else {
                     returnText = '--';
                 }
