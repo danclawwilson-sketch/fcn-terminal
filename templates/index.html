@@ -803,12 +803,27 @@
         
         // API helper
         async function apiCall(endpoint, data) {
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            return await res.json();
+            try {
+                console.log('API Call:', endpoint, data);
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!res.ok) {
+                    const text = await res.text();
+                    console.error('HTTP Error:', res.status, text);
+                    throw new Error(`HTTP ${res.status}: ${text}`);
+                }
+                
+                const json = await res.json();
+                console.log('API Response:', endpoint, json);
+                return json;
+            } catch (e) {
+                console.error('API Call failed:', endpoint, e);
+                throw e;
+            }
         }
         
         // Show toast
@@ -1010,6 +1025,7 @@
             document.getElementById('fcnHistorySummary').innerHTML = '';
             
             try {
+                console.log('Loading FCN history for date:', date);
                 const data = await apiCall('/api/history', {
                     api_key: state.apiKey,
                     secret_key: state.secretKey,
@@ -1017,9 +1033,19 @@
                     settle_date: date
                 });
                 
+                console.log('FCN history response:', data);
+                
                 if (data.error) {
                     console.error('API error:', data.error);
-                    document.getElementById('fcnHistoryList').innerHTML = `<div class="empty-state">${data.error}</div>`;
+                    document.getElementById('fcnHistoryList').innerHTML = `<div class="empty-state">API錯誤: ${data.error}</div>`;
+                    document.getElementById('fcnHistorySummary').innerHTML = '';
+                    return;
+                }
+                
+                // Check if data has the expected structure
+                if (!data.settled) {
+                    console.warn('No settled data in response:', data);
+                    document.getElementById('fcnHistoryList').innerHTML = '<div class="empty-state">該日期無結算記錄</div>';
                     document.getElementById('fcnHistorySummary').innerHTML = '';
                     return;
                 }
@@ -1027,7 +1053,7 @@
                 renderFcnHistory(data);
             } catch (e) {
                 console.error('Load FCN history error:', e);
-                document.getElementById('fcnHistoryList').innerHTML = '<div class="empty-state">載入失敗，請重試</div>';
+                document.getElementById('fcnHistoryList').innerHTML = `<div class="empty-state">載入失敗: ${e.message}</div>`;
                 document.getElementById('fcnHistorySummary').innerHTML = '';
             }
         }
