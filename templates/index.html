@@ -1137,7 +1137,6 @@
             const firstPos = sorted[0];
             const hasAutoPrice = firstPos.actual_settle_price > 0;
             const settleDate = firstPos.settle_date || '--';
-            const isEstimate = firstPos.is_estimate;
             
             // Build header with settlement price input
             let headerHtml = '';
@@ -1153,12 +1152,6 @@
                                 計算全部
                             </button>
                         </div>
-                    </div>
-                `;
-            } else if (isEstimate) {
-                headerHtml = `
-                    <div style="margin-bottom:16px;padding:12px;background:rgba(255,184,0,0.1);border:1px solid #ffb800;border-radius:8px;">
-                        <div style="color:#ffb800;font-weight:bold;">📊 估算結算價格: $${firstPos.actual_settle_price.toFixed(2)} (基於當前 ETH 價格)</div>
                     </div>
                 `;
             } else {

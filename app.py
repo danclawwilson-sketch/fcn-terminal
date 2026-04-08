@@ -136,11 +136,11 @@ def get_eth_price() -> float:
     return _eth_price_cache["price"]  # stale is better than 0
 
 
-def fetch_settlement_price(settle_ts: int) -> tuple:
+def fetch_settlement_price(settle_ts: int) -> float:
     """
     Fetch the settlement-window average price for a given timestamp.
     *settle_ts* is in **milliseconds**.
-    Returns: (price, is_estimate) - price is float, is_estimate is bool
+    Returns price as float, 0.0 if failed.
     """
     try:
         settle_date = datetime.utcfromtimestamp(settle_ts / 1000)
@@ -179,25 +179,15 @@ def fetch_settlement_price(settle_ts: int) -> tuple:
                         closes = [float(k[4]) for k in klines]
                         avg = sum(closes) / len(closes)
                         print(f"[DEBUG] Fetched {len(klines)} klines, avg={avg:.2f}", file=sys.stderr)
-                        return round(avg, 2), False  # Not an estimate
+                        return round(avg, 2)
             except Exception as e:
                 print(f"[DEBUG] Endpoint {url} failed: {e}", file=sys.stderr)
                 continue
         
-        # Fallback: use current ETH price as estimate
-        print(f"[DEBUG] Historical fetch failed, using current price as estimate", file=sys.stderr)
-        try:
-            current_price = get_eth_price()
-            if current_price > 0:
-                print(f"[DEBUG] Using current price as estimate: {current_price}", file=sys.stderr)
-                return round(current_price, 2), True  # Is an estimate
-        except Exception as e:
-            print(f"[DEBUG] Failed to get current price: {e}", file=sys.stderr)
-        
-        print(f"[DEBUG] All methods failed for {settle_date.date()}", file=sys.stderr)
+        print(f"[DEBUG] All endpoints failed for {settle_date.date()}", file=sys.stderr)
     except Exception as e:
         print(f"[ERROR] fetch_settlement_price: {e}", file=sys.stderr)
-    return 0.0, False
+    return 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -841,10 +831,9 @@ def api_settlement_price():
         if timestamp <= 0:
             return jsonify({"price": 0, "source": "invalid_timestamp"}), 400
 
-        price, is_estimate = fetch_settlement_price(timestamp)
+        price = fetch_settlement_price(timestamp)
         if price > 0:
-            source = "estimated" if is_estimate else "binance_kline"
-            return jsonify({"price": round(price, 2), "source": source, "is_estimate": is_estimate})
+            return jsonify({"price": round(price, 2), "source": "binance_kline"})
         return jsonify({"price": 0, "source": "unavailable"}), 404
     except Exception as e:
         traceback.print_exc()
@@ -933,12 +922,11 @@ def api_history():
             for pos in result_positions:
                 settle_ts = pos.get("settle_ts", 0)
                 settle_price = 0
-                is_estimate = False
                 
                 # Try to fetch settlement price
                 if settle_ts > 0:
                     try:
-                        settle_price, is_estimate = fetch_settlement_price(settle_ts)
+                        settle_price = fetch_settlement_price(settle_ts)
                     except:
                         pass
                 
@@ -951,7 +939,6 @@ def api_history():
                     pos["usdt_return"] = usdt_return
                     pos["eth_return"] = eth_return
                     pos["actual_settle_price"] = settle_price
-                    pos["is_estimate"] = is_estimate
                 else:
                     # Mark as unable to calculate
                     pos["scenario"] = "--"
@@ -1005,12 +992,11 @@ def api_history():
             for pos in result_positions:
                 settle_ts = pos.get("settle_ts", 0)
                 settle_price = 0
-                is_estimate = False
                 
                 # Try to fetch settlement price
                 if settle_ts > 0:
                     try:
-                        settle_price, is_estimate = fetch_settlement_price(settle_ts)
+                        settle_price = fetch_settlement_price(settle_ts)
                     except:
                         pass
                 
@@ -1019,7 +1005,6 @@ def api_history():
                     result = calculate_dci_settlement(pos, settle_price)
                     pos.update(result)
                     pos["actual_settle_price"] = settle_price
-                    pos["is_estimate"] = is_estimate
                 else:
                     # Mark as unable to calculate
                     pos["scenario"] = "--"
