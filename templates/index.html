@@ -1387,6 +1387,9 @@
                     <div class="position-details">
                         ${p.invest_amount.toFixed(4)} ${p.invest_coin} | Strike: $${p.strike_price.toFixed(2)} | APR: ${p.apr.toFixed(2)}%
                     </div>
+                    <div class="position-settle-date" style="margin-top: 4px; font-size: 0.8em; color: var(--txt2);">
+                        📅 結算日: ${p.settle_date || '--'}
+                    </div>
                 </div>
             `).join('');
         }
